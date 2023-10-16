@@ -3,5 +3,8 @@
     "paths": {
       "@helpers": ["./src/helpers/*"]
     }
-  }
+  },
+  "include": [
+    "./src/**/*"
+  ]
 }

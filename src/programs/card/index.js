@@ -1,2 +1,2 @@
-export * from './getCardProgram'
-export * from './drawSquares'
+export * from './get-program'
+export * from './draw-squares'

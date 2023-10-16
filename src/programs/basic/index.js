@@ -1,2 +1,2 @@
-export * from './getBasicProgram'
-export * from './drawBasic'
+export * from './get-program'
+export * from './draw'
