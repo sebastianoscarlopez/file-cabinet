@@ -6,5 +6,5 @@
   },
   "include": [
     "./src/**/*"
-  ]
+, "tests/sin-data.js", "tests/mock-points-capture.js"  ]
 }

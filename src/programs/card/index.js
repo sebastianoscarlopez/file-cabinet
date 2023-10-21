@@ -1,2 +1,2 @@
 export * from './get-program'
-export * from './draw-squares'
+export * from './draw'

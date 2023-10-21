@@ -5,18 +5,16 @@ let pointsVAO;
 
 export function init() {
   const squareGeometry = getSquareGeometry();
-  const square1 = mat4.create();
-  const square2 = mat4.create();
   const squares = [
     {
-      modelMatrix: square1
+      modelMatrix: mat4.create()
     },
     {
-      modelMatrix: square2
+      modelMatrix: mat4.create()
     }
   ];
-  mat4.translate(square1, square1, [0.25, 0.25, 0]);
-  mat4.translate(square2, square2, [-0.25, -0.25, 0]);
+  mat4.translate(squares[0].modelMatrix, squares[0].modelMatrix, [0.25, 0.25, 0]);
+  mat4.translate(squares[1].modelMatrix, squares[1].modelMatrix, [-0.25, -0.25, 0]);
 
   const { gl, programs } = global;
   const glProgramCard = programs.find((program) => program.name === 'card').program;
@@ -70,14 +68,14 @@ export function init() {
 export function draw() {
   const { gl } = global;
 
-  const glProgramCard = global.programs.find((program) => program.name === 'card').program;
-  gl.useProgram(glProgramCard);
+  const glProgram = global.programs.find((program) => program.name === 'card').program;
+  gl.useProgram(glProgram);
 
-  var u_color = gl.getUniformLocation(glProgramCard, "u_color");
+  var u_color = gl.getUniformLocation(glProgram, "u_color");
   gl.uniform3fv(u_color, [0, 0, 1]);
 
-  const index = gl.getUniformBlockIndex(glProgramCard, "Settings");
-  gl.uniformBlockBinding(glProgramCard, index, 0);
+  // const index = gl.getUniformBlockIndex(glProgramCard, "Settings");
+  // gl.uniformBlockBinding(glProgramCard, index, 0);
 
   gl.bindVertexArray(pointsVAO);
   gl.drawElementsInstanced(

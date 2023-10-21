@@ -11,7 +11,7 @@ uniform Settings {
 };
 
 void main() {
-  gl_Position = u_projection_matrix * u_view_matrix * vec4(coordinates, 0.0001f, 1.0f);
+  gl_Position = u_projection_matrix * u_view_matrix * model_matrix * vec4(coordinates, 0.0f, 1.0f);
   gl_PointSize = 2.0;  // vertex_color = model_matrix[2].xyz;
   vertex_color = model_matrix[2].xyz;
 }
