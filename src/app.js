@@ -1,9 +1,9 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec4 } from 'gl-matrix';
 
 import { global } from '@/helpers/index';
 
 import {
-  points, card, basic
+  points, card, basic, cursor, ray
   // , getCardProgram, getPointsProgram, drawSquares, drawPoints
 } from './programs/index';
 import { DataStorage } from '@/data-storage';
@@ -18,16 +18,20 @@ const NewPointEvent = new CustomEvent('point-added', {
 });
 
 console.log(mat4)
-let modelA = mat4.fromXRotation(mat4.create(), 0.3);
-modelA = mat4.translate(modelA, modelA, [-0.5, -0.25, -0.01])
+let modelA = mat4.create();//mat4.fromXRotation(mat4.create(), 0.8);
+modelA = mat4.translate(modelA, modelA, [-0.5, -0.25, 0.0]);
+console.log(modelA)
+
 const CARD_squares = [
+  {
+    modelMatrix: mat4.create()
+  },
   {
     modelMatrix: modelA
   },
-  {
-    modelMatrix: mat4.create()
-  }
 ];
+
+let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords;
 
 const startApp = async () => {
   const { gl, programs } = global;
@@ -37,12 +41,15 @@ const startApp = async () => {
   basic.init();
   const CARDS_MAX = 4;
 
-  const CARDS_mboModels = gl.createBuffer();
+  CARDS_mboModels = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
   gl.bufferData(gl.ARRAY_BUFFER, 40 * 16 * CARDS_MAX, gl.DYNAMIC_DRAW);
 
+  const data = new Float32Array(CARD_squares.flatMap((square) => [...square.modelMatrix]));
+  gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
+
   CARDS_SETUP({
-    gl,
     modelsBuffer: CARDS_mboModels
   });
 
@@ -50,8 +57,24 @@ const startApp = async () => {
     modelsBuffer: CARDS_mboModels
   });
 
-  POINTS_CAPTURE();
+  CURSOR_boCoords = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, CURSOR_boCoords);
+  gl.bufferData(gl.ARRAY_BUFFER, 4 * 2, gl.DYNAMIC_DRAW);
+  cursor.init({
+    cursorBuffer: CURSOR_boCoords
+  });
 
+  RAY_boCoords = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
+  gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * 2, gl.DYNAMIC_DRAW);
+  ray.init({
+    rayBuffer: RAY_boCoords,
+    modelsBuffer: CARDS_mboModels
+  });
+
+  document.addEventListener('mousemove', mouseHandler);
+
+  POINTS_CAPTURE();
   renderLoop(global.cardOneStorage);
 }
 
@@ -68,47 +91,86 @@ function POINTS_SETUP({
 }
 
 function CARDS_SETUP({
-  gl,
   modelsBuffer
 }) {
 
   card.init({
     modelsBuffer
   });
-
-  const data = new Float32Array(CARD_squares.flatMap((square) => [...square.modelMatrix]));
-  gl.bindBuffer(gl.ARRAY_BUFFER, modelsBuffer);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
 }
+
 
 function renderLoop() {
   const { gl, cardOneStorage } = global;
 
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 
-  gl.enable(gl.STENCIL_TEST);
-  gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+  gl.depthFunc(gl.LESS)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 
-  // stencil test
-  gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+  gl.enable(gl.STENCIL_TEST);
   gl.stencilMask(0xFF);
-  // gl.depthFunc(gl.LEQUAL)
 
+  gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+  gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
   card.draw({
-    totalCards: 2
+    totalCards: 1
   });
-  basic.draw();
+  
+  gl.depthFunc(gl.ALWAYS)
 
   gl.stencilFunc(gl.EQUAL, 1, 0xFF);
-  gl.stencilMask(0x00);
-  // gl.depthFunc(gl.LEQUAL)
 
   points.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
-  gl.stencilMask(0xFF);
-  gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+  gl.disable(gl.STENCIL_TEST);
+
+  cursor.draw();
+  ray.draw();
 
   requestAnimationFrame(renderLoop);
 }
+
+function mouseHandler(event) {
+  const { gl, viewMatrix, projectionMatrix } = global;
+
+  // console.log(mouseCoordsToClipCoords(event))
+
+  const mouseCoords = mouseCoordsToClipCoords(event);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, CURSOR_boCoords);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(mouseCoords));
+
+  const viewMatrixInverted = mat4.invert(mat4.create(), viewMatrix);
+  const projectionMatrixInverted = mat4.invert(mat4.create(), projectionMatrix);
+ 
+  const toWorldMatrix = mat4.multiply(mat4.create(), projectionMatrixInverted, viewMatrixInverted);
+
+  const mouseCoords4v =vec4.fromValues(...mouseCoords, -1, 1);
+  const mouseCoordsInWorldSpace = vec4.transformMat4(vec4.create(), mouseCoords4v, toWorldMatrix);
+
+  // console.log(mouseCoordsInWorldSpace, mouseCoords)
+  gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([0, 0, 0, mouseCoordsInWorldSpace[0], mouseCoordsInWorldSpace[1], mouseCoordsInWorldSpace[2]]));
+
+  // console.log(viewMatrixInverted)
+
+  // const { gl } = global;
+  // const {modelMatrix} = CARD_squares[0];
+  // mat4.translate(modelMatrix, modelMatrix, [-0.5, 0, 0]);
+
+  // gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
+  // gl.bufferSubData(gl.ARRAY_BUFFER, 0, modelMatrix);
+}
+
+function mouseCoordsToClipCoords(event) {
+  const { gl } = global;
+  const { canvas } = gl;
+  const { clientWidth, clientHeight } = canvas;
+  const { clientX, clientY } = event;
+  const x = clientX / clientWidth * 2 - 1;
+  const y = 1 - clientY / clientHeight * 2;
+  return [x, y];
+}
+
 export default startApp;

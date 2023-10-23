@@ -1,15 +1,14 @@
 import { global } from '@/helpers/index';
-import { points } from '../src/programs/index';
 import { sinData } from './sin-data';
 
 const POINTS_DATA_SETTINGS = {
   scale: {
-    x: 0.5,
-    y: 0.25
+    x: 1,
+    y: 1
   },
   offset: {
-    x: 0.40,
-    y: 0.25
+    x: -0.5,
+    y: 0.0
   }
 }
 
@@ -22,9 +21,12 @@ function POINT_DATA_ADJUST(points) {
 }
 
 export function POINTS_CAPTURE() {
-  const MOCK_totalPoints = 40;
+  const MOCK_totalPoints = 500;
   const MOCK_pointsData = sinData({
-    totalPoints: MOCK_totalPoints
+    totalPoints: MOCK_totalPoints,
+    amplitude: 0.25,
+    frequency: 10,
+    phase: 0,
   });
 
   const pointsData = [];
@@ -50,7 +52,7 @@ export function POINTS_CAPTURE() {
   }, 5);
 
   setInterval(() => {
-    POINTS_DATA_SETTINGS.offset.x -= 0.03;
+    // POINTS_DATA_SETTINGS.offset.x -= 0.03;
     document.dispatchEvent(new CustomEvent('point-adjust'));
   }, 200);
 }
