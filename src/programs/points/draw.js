@@ -55,7 +55,7 @@ export function draw(totalPoints) {
 
   gl.bindVertexArray(pointsVAO);
   gl.drawArraysInstanced(
-    gl.POINTS,
+    gl.LINE_STRIP,
     0,
     totalPoints,
     1

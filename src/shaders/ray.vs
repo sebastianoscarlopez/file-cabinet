@@ -11,5 +11,5 @@ uniform Settings {
 
 void main() {
   gl_Position = u_projection_matrix * u_view_matrix * model_matrix * vec4(coordinates, 1.0f);
-  gl_PointSize = 4.0;
+  gl_PointSize = 10.0;
 }

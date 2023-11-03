@@ -18,16 +18,16 @@ const NewPointEvent = new CustomEvent('point-added', {
 });
 
 console.log(mat4)
-let modelA = mat4.create();//mat4.fromXRotation(mat4.create(), 0.8);
-modelA = mat4.translate(modelA, modelA, [-0.5, -0.25, 0.0]);
+let modelA = mat4.fromYRotation(mat4.create(), 0.2);
+modelA = mat4.translate(modelA, modelA, [0.0, 0.0, 0.0]);
 console.log(modelA)
 
 const CARD_squares = [
   {
-    modelMatrix: mat4.create()
+    modelMatrix: modelA
   },
   {
-    modelMatrix: modelA
+    modelMatrix: mat4.create()
   },
 ];
 
@@ -71,6 +71,11 @@ const startApp = async () => {
     rayBuffer: RAY_boCoords,
     modelsBuffer: CARDS_mboModels
   });
+  gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([
+    0.0, 0.0, 0.998, 
+    0.0, 0.0002, 0.998999
+  ]));
 
   document.addEventListener('mousemove', mouseHandler);
 
@@ -106,7 +111,11 @@ function renderLoop() {
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 
   gl.depthFunc(gl.LESS)
+  gl.lineWidth(50.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  gl.disable(gl.STENCIL_TEST);
+
+  ray.draw();
 
   gl.enable(gl.STENCIL_TEST);
   gl.stencilMask(0xFF);
@@ -117,16 +126,16 @@ function renderLoop() {
     totalCards: 1
   });
   
-  gl.depthFunc(gl.ALWAYS)
+  gl.depthFunc(gl.EQUAL)
 
   gl.stencilFunc(gl.EQUAL, 1, 0xFF);
 
   points.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
   gl.disable(gl.STENCIL_TEST);
+  gl.depthFunc(gl.LESS)
 
-  cursor.draw();
-  ray.draw();
+  // cursor.draw();
 
   requestAnimationFrame(renderLoop);
 }
@@ -146,12 +155,15 @@ function mouseHandler(event) {
  
   const toWorldMatrix = mat4.multiply(mat4.create(), projectionMatrixInverted, viewMatrixInverted);
 
-  const mouseCoords4v =vec4.fromValues(...mouseCoords, -1, 1);
+  const mouseCoords4v =vec4.fromValues(...mouseCoords, 0, -0.0001);
   const mouseCoordsInWorldSpace = vec4.transformMat4(vec4.create(), mouseCoords4v, toWorldMatrix);
 
-  // console.log(mouseCoordsInWorldSpace, mouseCoords)
+  console.log(mouseCoordsInWorldSpace, mouseCoords)
   gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([0, 0, 0, mouseCoordsInWorldSpace[0], mouseCoordsInWorldSpace[1], mouseCoordsInWorldSpace[2]]));
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([0, 0, -0.0001, 
+    // 0, 1, 1
+   mouseCoordsInWorldSpace[0], mouseCoordsInWorldSpace[1], mouseCoordsInWorldSpace[2]
+  ]));
 
   // console.log(viewMatrixInverted)
 
