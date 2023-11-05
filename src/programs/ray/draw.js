@@ -9,7 +9,7 @@ export function init({
 }) {
   const { gl, programs } = global;
 
-  const glProgram = programs.find((program) => program.name === 'ray').program;
+  const glProgram = programs.find((program) => program.name === 'ray').glProgram;
   gl.useProgram(glProgram);
 
   rayVAO = gl.createVertexArray();
@@ -41,7 +41,7 @@ export function draw() {
 
   const { gl } = global;
 
-  const glProgram = global.programs.find((program) => program.name === 'ray').program;
+  const glProgram = global.programs.find((program) => program.name === 'ray').glProgram;
   gl.useProgram(glProgram);
 
   gl.bindVertexArray(rayVAO);

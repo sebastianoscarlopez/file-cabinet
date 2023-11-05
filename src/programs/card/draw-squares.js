@@ -17,7 +17,7 @@ export function init() {
   mat4.translate(squares[1].modelMatrix, squares[1].modelMatrix, [-0.25, -0.25, 0]);
 
   const { gl, programs } = global;
-  const glProgramCard = programs.find((program) => program.name === 'card').program;
+  const glProgramCard = programs.find((program) => program.name === 'card').glProgram;
 
   gl.useProgram(glProgramCard);
 
@@ -68,7 +68,7 @@ export function init() {
 export function draw() {
   const { gl } = global;
 
-  const glProgram = global.programs.find((program) => program.name === 'card').program;
+  const glProgram = global.programs.find((program) => program.name === 'card').glProgram;
   gl.useProgram(glProgram);
 
   var u_color = gl.getUniformLocation(glProgram, "u_color");

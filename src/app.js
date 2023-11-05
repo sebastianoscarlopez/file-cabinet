@@ -3,7 +3,7 @@ import { mat4, vec4 } from 'gl-matrix';
 import { global } from '@/helpers/index';
 
 import {
-  points, card, basic, cursor, ray
+  quad, lines, card, basic, cursor, ray
   // , getCardProgram, getPointsProgram, drawSquares, drawPoints
 } from './programs/index';
 import { DataStorage } from '@/data-storage';
@@ -17,10 +17,8 @@ const NewPointEvent = new CustomEvent('point-added', {
   }
 });
 
-console.log(mat4)
-let modelA = mat4.fromYRotation(mat4.create(), 0.2);
+let modelA = mat4.fromYRotation(mat4.create(), 0.0);
 modelA = mat4.translate(modelA, modelA, [0.0, 0.0, 0.0]);
-console.log(modelA)
 
 const CARD_squares = [
   {
@@ -37,7 +35,7 @@ const startApp = async () => {
   const { gl, programs } = global;
 
   await setupPrograms(programs);
-
+  quad.init();
   basic.init();
   const CARDS_MAX = 4;
 
@@ -89,7 +87,7 @@ function POINTS_SETUP({
   global.cardOneStorage = new DataStorage();
   global.cardOneStorage.init();
 
-  points.init({
+  lines.init({
     vertexBuffer: global.cardOneStorage.memoryBuffer,
     modelsBuffer
   });
@@ -116,6 +114,9 @@ function renderLoop() {
   gl.disable(gl.STENCIL_TEST);
 
   ray.draw();
+  const totalPoints = cardOneStorage.memoryBufferOffset / 4 / 2;
+  // console.log(totalPoints)
+  // lines.draw(totalPoints);
 
   gl.enable(gl.STENCIL_TEST);
   gl.stencilMask(0xFF);
@@ -126,11 +127,11 @@ function renderLoop() {
     totalCards: 1
   });
   
-  gl.depthFunc(gl.EQUAL)
+  gl.depthFunc(gl.ALWAYS)
 
   gl.stencilFunc(gl.EQUAL, 1, 0xFF);
 
-  points.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
+  lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
   gl.disable(gl.STENCIL_TEST);
   gl.depthFunc(gl.LESS)
@@ -158,7 +159,7 @@ function mouseHandler(event) {
   const mouseCoords4v =vec4.fromValues(...mouseCoords, 0, -0.0001);
   const mouseCoordsInWorldSpace = vec4.transformMat4(vec4.create(), mouseCoords4v, toWorldMatrix);
 
-  console.log(mouseCoordsInWorldSpace, mouseCoords)
+  // console.log(mouseCoordsInWorldSpace, mouseCoords)
   gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
   gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([0, 0, -0.0001, 
     // 0, 1, 1

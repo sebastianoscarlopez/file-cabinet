@@ -8,7 +8,7 @@ export function init({
 }) {
   const { gl, programs } = global;
 
-  const glProgram = programs.find((program) => program.name === 'cursor').program;
+  const glProgram = programs.find((program) => program.name === 'cursor').glProgram;
   gl.useProgram(glProgram);
 
   cursorVAO = gl.createVertexArray();
@@ -28,7 +28,7 @@ export function draw() {
 
   const { gl } = global;
 
-  const glProgram = global.programs.find((program) => program.name === 'cursor').program;
+  const glProgram = global.programs.find((program) => program.name === 'cursor').glProgram;
   gl.useProgram(glProgram);
 
   gl.bindVertexArray(cursorVAO);

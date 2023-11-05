@@ -7,7 +7,7 @@ const POINTS_DATA_SETTINGS = {
     y: 1
   },
   offset: {
-    x: -0.5,
+    x: -1.0,
     y: 0.0
   }
 }
@@ -21,12 +21,13 @@ function POINT_DATA_ADJUST(points) {
 }
 
 export function POINTS_CAPTURE() {
-  const MOCK_totalPoints = 500;
+  const MOCK_totalPoints = 200;
   const MOCK_pointsData = sinData({
     totalPoints: MOCK_totalPoints,
-    amplitude: 0.25,
+    amplitude: 1,
     frequency: 10,
     phase: 0,
+    xEnd: 2
   });
 
   const pointsData = [];

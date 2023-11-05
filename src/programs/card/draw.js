@@ -7,7 +7,7 @@ export function init({
 }) {
 
   const { gl, programs } = global;
-  const glProgram = programs.find((program) => program.name === 'card').program;
+  const glProgram = programs.find((program) => program.name === 'card').glProgram;
 
   gl.useProgram(glProgram);
 
@@ -52,7 +52,7 @@ export function init({
 export function draw({totalCards}) {
   const { gl } = global;
 
-  const glProgramCard = global.programs.find((program) => program.name === 'card').program;
+  const glProgramCard = global.programs.find((program) => program.name === 'card').glProgram;
   gl.useProgram(glProgramCard);
 
   var u_color = gl.getUniformLocation(glProgramCard, "u_color");

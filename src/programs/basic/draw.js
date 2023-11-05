@@ -5,8 +5,9 @@ let basicVertexBuffer, basicIndexBuffer, basicVAO;
 
 export function init() {
   const { gl, programs } = global;
-  const glProgramBasic = programs.find((program) => program.name === 'basic').program;
+  const glProgramBasic = programs.find((program) => program.name === 'basic').glProgram;
 
+  console.log(glProgramBasic)
   gl.useProgram(glProgramBasic);
 
   basicVAO = gl.createVertexArray();
@@ -33,7 +34,7 @@ export function init() {
 
 export function draw() {
   const { gl, programs } = global;
-  const glProgramBasic = programs.find((program) => program.name === 'basic').program;
+  const glProgramBasic = programs.find((program) => program.name === 'basic').glProgram;
 
   gl.useProgram(glProgramBasic);
 

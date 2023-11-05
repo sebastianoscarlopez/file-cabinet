@@ -9,7 +9,7 @@ export function init({
 }) {
   const { gl, programs } = global;
 
-  const glProgram = programs.find((program) => program.name === 'points').program;
+  const glProgram = programs.find((program) => program.name === 'points').glProgram;
   gl.useProgram(glProgram);
 
   pointsVAO = gl.createVertexArray();
@@ -41,7 +41,7 @@ export function draw(totalPoints) {
 
   const { gl } = global;
 
-  const glProgram = global.programs.find((program) => program.name === 'points').program;
+  const glProgram = global.programs.find((program) => program.name === 'points').glProgram;
   gl.useProgram(glProgram);
 
   // const index = gl.getUniformBlockIndex(glProgram, "Settings");
@@ -55,7 +55,7 @@ export function draw(totalPoints) {
 
   gl.bindVertexArray(pointsVAO);
   gl.drawArraysInstanced(
-    gl.LINE_STRIP,
+    gl.POINTS,
     0,
     totalPoints,
     1

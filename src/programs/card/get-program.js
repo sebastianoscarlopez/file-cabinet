@@ -4,5 +4,5 @@ import fs from '@/shaders/card.fs?raw';
 
 
 export async function getProgram() {
-  return compileProgram(vs, fs);
+return compileProgram(vs, fs);
 }
