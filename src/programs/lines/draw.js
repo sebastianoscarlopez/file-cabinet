@@ -3,15 +3,18 @@ import { global } from '@/helpers/index';
 
 export function init({
   vertexBuffer,
+  modelsBuffer
 }) {
   const { gl, programs } = global;
 
-  const programConfig = programs.find((program) => program.name === 'lines');
-  const glProgram = programConfig.program
-  gl.useProgram(glProgram);
+  setupFrameBuffer();
 
-  programConfig.linesVAO = gl.createVertexArray();
-  gl.bindVertexArray(programConfig.linesVAO);
+  const programConfigLines = programs.find((program) => program.name === 'lines');
+  const glProgramLines = programConfigLines.program
+  gl.useProgram(glProgramLines);
+
+  programConfigLines.vao = gl.createVertexArray();
+  gl.bindVertexArray(programConfigLines.vao);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   const coordinatesLayout = 0;
@@ -21,7 +24,25 @@ export function init({
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
 
-  setupFrameBuffer();
+  const programConfigCard = programs.find((program) => program.name === 'quad');
+  const { glProgram: glProgramCard } = programConfigCard;
+  gl.useProgram(glProgramCard);
+
+  programConfigCard.vao = gl.createVertexArray();
+  gl.bindVertexArray(programConfigCard.vao);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, modelsBuffer);
+
+  const locModel = gl.getAttribLocation(glProgramCard, "model_matrix");
+  for (let i = 0; i < 4; i++) {
+    gl.vertexAttribPointer(locModel + i, 4, gl.FLOAT, false, 4 * 16, 4 * 4 * i);
+    gl.vertexAttribDivisor(locModel + i, 1);
+    gl.enableVertexAttribArray(locModel + i);
+  }
+
+  gl.bindVertexArray(null);
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
 }
 
 function setupFrameBuffer() {
@@ -37,8 +58,8 @@ function setupFrameBuffer() {
 
   programConfig.frameBuffer.texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, programConfig.frameBuffer.texture);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, clientWidth, clientHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, clientWidth , clientHeight , 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   if(!gl.isTexture(programConfig.frameBuffer.texture)) {
     console.log('texture failed');
   } else {
@@ -47,7 +68,7 @@ function setupFrameBuffer() {
 
   const depthBuffer = gl.createRenderbuffer();
   gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, clientWidth, clientHeight);
+  gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, clientWidth , clientHeight );
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, programConfig.frameBuffer);
   gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, programConfig.frameBuffer.texture, 0);
@@ -69,51 +90,51 @@ function setupFrameBuffer() {
 export function draw(totalLines) {
   drawLines(totalLines);
 
-  drawQuad();
+  // drawQuad();
 }
 
 function drawQuad() {
   const { gl, programs } = global;
   const programLinesConfig = programs.find((program) => program.name === 'lines');
-  const programConfig = programs.find((program) => program.name === 'quad');
+  const programConfigQuad = programs.find((program) => program.name === 'quad');
 
-  gl.useProgram(programConfig.glProgram);
+  gl.useProgram(programConfigQuad.glProgram);
 
   // gl.disable(gl.STENCIL_TEST);
-  // gl.depthFunc(gl.ALWAYS)
+  gl.depthFunc(gl.ALWAYS)
 
-  gl.bindVertexArray(programConfig.vao);
+  gl.bindVertexArray(programConfigQuad.vao);
 
   // uniform texture
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, programLinesConfig.frameBuffer.texture);  
-  gl.uniform1i(programConfig.uniforms.uTexture, 0);
+  gl.uniform1i(programConfigQuad.uniforms.uTexture, 0);
 
-  gl.drawElements(
+  gl.drawElementsInstanced(
     gl.TRIANGLE_STRIP,
     4,
     gl.UNSIGNED_SHORT,
-    0
+    0,
+    1
   );
   gl.bindVertexArray(null);
 }
 
-
 function drawLines(totalLines) {
   const { gl, clientWidth, clientHeight } = global;
 
-  const {glProgram, frameBuffer, linesVAO} = global.programs.find((program) => program.name === 'lines');
+  const {glProgram, frameBuffer, vao} = global.programs.find((program) => program.name === 'lines');
   gl.useProgram(glProgram);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-  gl.viewport(0, 0, clientWidth, clientHeight); 
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+  gl.viewport(0, 0, clientWidth , clientHeight ); 
 
   gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  gl.bindVertexArray(linesVAO);
+  gl.bindVertexArray(vao);
   gl.drawArraysInstanced(
-    gl.LINE_STRIP,
+    gl.POINTS,
     0,
     totalLines,
     1

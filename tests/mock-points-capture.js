@@ -21,13 +21,13 @@ function POINT_DATA_ADJUST(points) {
 }
 
 export function POINTS_CAPTURE() {
-  const MOCK_totalPoints = 200;
+  const MOCK_totalPoints = 500;
   const MOCK_pointsData = sinData({
     totalPoints: MOCK_totalPoints,
     amplitude: 1,
-    frequency: 10,
+    frequency: 1,
     phase: 0,
-    xEnd: 2
+    xEnd: 3
   });
 
   const pointsData = [];

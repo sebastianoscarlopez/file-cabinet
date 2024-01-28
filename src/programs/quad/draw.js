@@ -1,28 +1,40 @@
 import { global, getSquareGeometry } from '@/helpers/index';
 
 
-export function init() {
+export function init({
+  modelsBuffer
+}) {
   const geometry = getSquareGeometry();
 
   const { gl, programs } = global;
-  const program = programs.find((program) => program.name === 'quad');
+  const programConfig = programs.find((program) => program.name === 'quad');
 
-  console.log('quad init', program);
-  gl.useProgram(program.glProgram);
+  console.log('quad init', programConfig);
+  gl.useProgram(programConfig.glProgram);
 
-  program.vao = gl.createVertexArray();
-  gl.bindVertexArray(program.vao);
+  programConfig.vao = gl.createVertexArray();
+  gl.bindVertexArray(programConfig.vao);
 
-  program.vertexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, program.vertexBuffer);
+  programConfig.modelsBuffer = modelsBuffer;
+  gl.bindBuffer(gl.ARRAY_BUFFER, modelsBuffer);
+
+  const locModel = gl.getAttribLocation(programConfig.glProgram, "model_matrix");
+  for (let i = 0; i < 4; i++) {
+    gl.vertexAttribPointer(locModel + i, 4, gl.FLOAT, false, 4 * 16, 4 * 4 * i);
+    gl.vertexAttribDivisor(locModel + i, 1);
+    gl.enableVertexAttribArray(locModel + i);
+  }
+
+  programConfig.vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, programConfig.vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, geometry.vertices, gl.STATIC_DRAW);
 
   const coordinatesLayout = 0;
   gl.vertexAttribPointer(coordinatesLayout, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(coordinatesLayout);
 
-  program.indexBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, program.indexBuffer);
+  programConfig.indexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, programConfig.indexBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
 
   gl.bindVertexArray(null);
@@ -30,6 +42,9 @@ export function init() {
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
   gl.disableVertexAttribArray(coordinatesLayout);
+  for (let i = 0; i < 4; i++) {
+    gl.disableVertexAttribArray(locModel + i);
+  }
 }
 
 export function draw() {
@@ -40,11 +55,12 @@ export function draw() {
 
   gl.bindVertexArray(program.vao);
 
-  gl.drawElements(
+  gl.drawElementsInstanced(
     gl.TRIANGLE_STRIP,
     4,
     gl.UNSIGNED_SHORT,
-    0
+    0,
+    1
   );
   gl.bindVertexArray(null);
 }

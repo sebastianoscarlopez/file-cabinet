@@ -18,9 +18,9 @@ export function setupCanvas(canvas) {
   const aspect = canvas.clientWidth / canvas.clientHeight;
 
   const viewMatrix = mat4.create();
-  // mat4.lookAt(viewMatrix, [0, 0, 2], [0, 0, 0], [0, 1, 0]);
+  mat4.lookAt(viewMatrix, [0, 0, 1], [0, 0, 0], [0, 1, 0]);
   let projectionMatrix = mat4.create();
-  // projectionMatrix = mat4.perspective(projectionMatrix, glMatrix.toRadian(90), aspect, 0.001, 100);
+  projectionMatrix = mat4.perspective(projectionMatrix, glMatrix.toRadian(90), aspect, 0.001, 100);
   // mat4.ortho(projectionMatrix, -1, 1, -1, 1, 0, 2);
   //glm::radians(90.0f), 800.0f / 600.0f, 0.1f, 100.0f
   // mat4.perspective(projectionMatrix, glMatrix.toRadian(45), 1, 0.1, 1000);

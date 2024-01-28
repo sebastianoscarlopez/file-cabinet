@@ -6,7 +6,7 @@ export function sinData({
   const delta = (xEnd - xStart) / totalPoints;
   for (let i = 0; i < totalPoints; i++) {
     const x = i * delta;
-    const y = amplitude * Math.sin(frequency * x * (2 * Math.PI / (xEnd - xStart)) + phase) + verticalShift;
+    const y = amplitude * Math.sin(frequency * x * 2 * Math.PI + phase) + verticalShift;
     points.push(x, y);
   }
 

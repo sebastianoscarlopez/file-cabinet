@@ -35,7 +35,6 @@ const startApp = async () => {
   const { gl, programs } = global;
 
   await setupPrograms(programs);
-  quad.init();
   basic.init();
   const CARDS_MAX = 4;
 
@@ -52,6 +51,10 @@ const startApp = async () => {
   });
 
   POINTS_SETUP({
+    modelsBuffer: CARDS_mboModels
+  });
+
+  quad.init({
     modelsBuffer: CARDS_mboModels
   });
 
@@ -129,14 +132,14 @@ function renderLoop() {
   
   gl.depthFunc(gl.ALWAYS)
 
-  gl.stencilFunc(gl.EQUAL, 1, 0xFF);
+  // gl.stencilFunc(gl.EQUAL, 1, 0xFF);
 
-  lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
+  // lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
   gl.disable(gl.STENCIL_TEST);
   gl.depthFunc(gl.LESS)
 
-  // cursor.draw();
+  cursor.draw();
 
   requestAnimationFrame(renderLoop);
 }
