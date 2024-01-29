@@ -9,6 +9,7 @@ export function init({
   const { gl, programs } = global;
   const programConfig = programs.find((program) => program.name === 'quad');
 
+  console.log('quad init', programConfig);
   gl.useProgram(programConfig.glProgram);
 
   programConfig.vao = gl.createVertexArray();

@@ -1,18 +1,19 @@
 import { global } from '@/helpers/index';
 import {
-  basic, points, card, cursor, ray, lines, quad
+  basic, points, card, cursor, ray, lines, quad, grid
 } from './index';
 import { setupUniformSettings } from '@/programs/shared-settings';
 
 export async function setupPrograms(programs) {
-  const [glProgramBasic, glProgramPoints, glProgramLines, glQuad, glProgramCard, glProgramCursor, glProgramRay] = await Promise.all([
+  const [glProgramBasic, glProgramPoints, glProgramLines, glQuad, glProgramCard, glProgramCursor, glProgramRay, glProgramGrid] = await Promise.all([
     basic.getProgram(),
     points.getProgram(),
     lines.getProgram(),
     quad.getProgram(),
     card.getProgram(),
     cursor.getProgram(),
-    ray.getProgram()
+    ray.getProgram(),
+    grid.getProgram()
   ]);
   programs.push({
     name: 'basic',
@@ -37,6 +38,10 @@ export async function setupPrograms(programs) {
   programs.push({
     name: 'ray',
     glProgram: glProgramRay
+  });
+  programs.push({
+    name: 'grid',
+    glProgram: glProgramGrid
   });
 
 

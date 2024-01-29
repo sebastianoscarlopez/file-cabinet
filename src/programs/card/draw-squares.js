@@ -83,7 +83,7 @@ export function draw() {
     4,
     gl.UNSIGNED_SHORT,
     0,
-    2
+    1
   );
   gl.bindVertexArray(null);
 }

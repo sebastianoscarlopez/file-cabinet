@@ -14,28 +14,22 @@ export function getTriangleGeometry() {
   };
 }
 
-export function getSquareGeometry() {
-  const bounds = {
-    x: 0,
-    y: 0,
-    width: 1,
-    height: 1,
-  };
-  const halfWidth = bounds.width / 2;
-  const halfHeight = bounds.height / 2;
+export function getSquareGeometry({ x = 0, y = 0, width = 1, height = 1 } = {}) {
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
 
   const vertices = new Float32Array([
-    bounds.x - halfWidth,
-    bounds.y - halfHeight,
+    x - halfWidth,
+    y - halfHeight,
     0.0,
-    bounds.x + halfWidth,
-    bounds.y - halfHeight,
+    x + halfWidth,
+    y - halfHeight,
     0.0,
-    bounds.x - halfWidth,
-    bounds.y + halfHeight,
+    x - halfWidth,
+    y + halfHeight,
     0.0,
-    bounds.x + halfWidth,
-    bounds.y + halfHeight,
+    x + halfWidth,
+    y + halfHeight,
     0.0,
   ]);
 
