@@ -1,18 +1,19 @@
 import { mat4, vec4 } from 'gl-matrix';
 
-import { global, createGenericFrameBufferWithTexture } from '@/helpers/index';
+import { global } from '@/helpers/index';
 
 import {
-  quad, lines, card, basic, cursor, ray, grid,
+  quad, lines, card, basic, cursor, ray,
   // , getCardProgram, getPointsProgram, drawSquares, drawPoints
 } from './programs/index';
 import { DataStorage } from '@/data-storage';
 import { setupPrograms } from '@/programs/setup';
 import { POINTS_CAPTURE } from '../tests/mock-points-capture';
+import { createCardBaseTexture } from './card-base-texture';
 
 
-let modelA = mat4.fromYRotation(mat4.create(), 0.0);
-modelA = mat4.translate(modelA, modelA, [0.0, 0.0, 0.0]);
+let modelA = mat4.fromYRotation(mat4.create(), 0.5);
+modelA = mat4.translate(modelA, modelA, [-0.5, -0.0, -0.5]);
 
 const CARD_squares = [
   {
@@ -23,34 +24,16 @@ const CARD_squares = [
   },
 ];
 
-let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords, QUAD_texture;
+let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords, CARD_base_texture;
 
 const startApp = async () => {
-  const { gl, programs, clientWidth, clientHeight } = global;
+  const { gl, CARDS_MAX, CARD_SIZE, programs, clientWidth, clientHeight } = global;
 
   await setupPrograms(programs);
   basic.init();
   
-  // create card texture
-  grid.init();
-  const resolution = {
-    width: 1000,
-    height: 1000
-  }
-  // Buffer and texture for card texture
-  const {
-    frameBuffer: cardFrameBuffer, texture: cardTexture
-  } = createGenericFrameBufferWithTexture(resolution.width, resolution.height);
-
-  QUAD_texture = cardTexture;
-  gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffer);
-  renderGrid(resolution);
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, clientWidth, clientHeight ); 
-
-  
-  const CARDS_MAX = 4;
+  const { cardFrameBuffer, cardTexture } = createCardBaseTexture();
+  CARD_base_texture = cardTexture;
 
   CARDS_mboModels = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
@@ -64,10 +47,9 @@ const startApp = async () => {
     modelsBuffer: CARDS_mboModels
   });
 
-  // CARDS_SETUP({
-  //   modelsBuffer: CARDS_mboModels
-  // });
-
+  CARDS_SETUP({
+    modelsBuffer: CARDS_mboModels
+  });
 
   // POINTS_SETUP({
   //   modelsBuffer: CARDS_mboModels
@@ -96,38 +78,24 @@ const startApp = async () => {
   // document.addEventListener('mousemove', mouseHandler);
 
   // POINTS_CAPTURE();
+  
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, clientWidth, clientHeight );
+
   renderLoop(global.cardOneStorage);
 }
 
-function renderGrid(resolution) {
-  // console.log('size', size)
-  const { gl } = global;
+// function POINTS_SETUP({
+//   modelsBuffer
+// }) {
+//   global.cardOneStorage = new DataStorage();
+//   global.cardOneStorage.init();
 
-  gl.viewport(0, 0, resolution.width , resolution.height ); 
-
-  gl.clearColor(0.3, 0.2, 0.2, 1.0);
-
-  gl.lineWidth(50.0);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-  gl.disable(gl.STENCIL_TEST);
-  gl.depthFunc(gl.ALWAYS)
-
-  grid.draw();
-  
-  // requestAnimationFrame(renderGrid.bind(this, resolution));
-}
-
-function POINTS_SETUP({
-  modelsBuffer
-}) {
-  global.cardOneStorage = new DataStorage();
-  global.cardOneStorage.init();
-
-  lines.init({
-    vertexBuffer: global.cardOneStorage.memoryBuffer,
-    modelsBuffer
-  });
-}
+//   lines.init({
+//     vertexBuffer: global.cardOneStorage.memoryBuffer,
+//     modelsBuffer
+//   });
+// }
 
 function CARDS_SETUP({
   modelsBuffer
@@ -140,8 +108,7 @@ function CARDS_SETUP({
 
 
 function renderLoop() {
-  const { gl, cardOneStorage } = global;
-
+  const { gl, programs, CARD_SIZE, cardOneStorage } = global;
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 
   gl.depthFunc(gl.ALWAYS)
@@ -159,9 +126,20 @@ function renderLoop() {
 
   // gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
   // gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-  // card.draw({
-  //   totalCards: 1
-  // });
+  
+  const programCardConfig = programs.find((program) => program.name === 'card');
+
+  const u_textureLocation = gl.getUniformLocation(programCardConfig.glProgram, "u_texture");
+  gl.uniform1i(u_textureLocation, 0);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, CARD_base_texture);
+
+  const u_card_sizeLocation = gl.getUniformLocation(programCardConfig.glProgram, "u_card_size");
+  gl.uniform1f(u_card_sizeLocation, CARD_SIZE);
+
+  card.draw({
+    totalCards: 2
+  });
   
   // gl.depthFunc(gl.ALWAYS)
 
@@ -175,20 +153,20 @@ function renderLoop() {
   // cursor.draw();
 
 
-  const { programs } = global;
-  const programConfig = programs.find((program) => program.name === 'quad');
+  // const { programs } = global;
+  // const programConfig = programs.find((program) => program.name === 'quad');
 
-  const u_texture0Location = gl.getUniformLocation(programConfig.glProgram, "u_texture0");
-  gl.uniform1i(u_texture0Location, 0);
-  // const u_texture1Location = gl.getUniformLocation(glProgramCard, "u_texture1");
-  // gl.uniform1i(u_texture1Location, 1);
+  // const u_texture0Location = gl.getUniformLocation(programConfig.glProgram, "u_texture0");
+  // gl.uniform1i(u_texture0Location, 0);
+  // // const u_texture1Location = gl.getUniformLocation(glProgramCard, "u_texture1");
+  // // gl.uniform1i(u_texture1Location, 1);
 
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, QUAD_texture);
-  // gl.activeTexture(gl.TEXTURE1);
-  // gl.bindTexture(gl.TEXTURE_2D, QUAD_texture);
+  // gl.activeTexture(gl.TEXTURE0);
+  // gl.bindTexture(gl.TEXTURE_2D, CARD_base_texture);
+  // // gl.activeTexture(gl.TEXTURE1);
+  // // gl.bindTexture(gl.TEXTURE_2D, QUAD_texture);
 
-  quad.draw();
+  // quad.draw();
 
   requestAnimationFrame(renderLoop);
 }
