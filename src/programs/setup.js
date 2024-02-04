@@ -1,17 +1,18 @@
 import { global } from '@/helpers/index';
 import {
-  basic, points, card, cursor, ray, lines, quad, grid
+  basic, points, cards, cardsSelection, cursor, ray, lines, quad, grid
 } from './index';
 import { setupUniformSettings } from '@/programs/shared-settings';
 import { glMatrix, mat4 } from 'gl-matrix';
 
 export async function setupPrograms(programs) {
-  const [glProgramBasic, glProgramPoints, glProgramLines, glQuad, glProgramCard, glProgramCursor, glProgramRay, glProgramGrid] = await Promise.all([
+  const [glProgramBasic, glProgramPoints, glProgramLines, glQuad, glProgramCards, glProgramCardsSelection, glProgramCursor, glProgramRay, glProgramGrid] = await Promise.all([
     basic.getProgram(),
     points.getProgram(),
     lines.getProgram(),
     quad.getProgram(),
-    card.getProgram(),
+    cards.getProgram(),
+    cardsSelection.getProgram(),
     cursor.getProgram(),
     ray.getProgram(),
     grid.getProgram()
@@ -21,8 +22,12 @@ export async function setupPrograms(programs) {
     glProgram: glProgramBasic
   });
   programs.push({
-    name: 'card',
-    glProgram: glProgramCard
+    name: 'cards',
+    glProgram: glProgramCards
+  });
+  programs.push({
+    name: 'cardsSelection',
+    glProgram: glProgramCardsSelection
   });
   programs.push({
     name: 'points',
@@ -46,7 +51,7 @@ export async function setupPrograms(programs) {
   });
 
 
-  const { gl } = global;
+  const { gl, canvas } = global;
   const configQuad = {
     name: 'quad',
     glProgram: glQuad,
@@ -80,5 +85,5 @@ export async function setupPrograms(programs) {
     });
   });
 
-  resizeObserver.observe(document.getElementById('canvas_main'));
+  resizeObserver.observe(canvas);
 }

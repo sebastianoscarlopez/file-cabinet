@@ -27,6 +27,7 @@ export function setupCanvas(canvas) {
 
   // perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
   global.gl = gl;
+  global.canvas = canvas;
   global.viewMatrix = viewMatrix;
   global.projectionMatrix = projectionMatrix;
   global.aspect = aspect;

@@ -8,7 +8,7 @@ export function init({
 }) {
 
   const { gl, programs } = global;
-  const glProgram = programs.find((program) => program.name === 'card').glProgram;
+  const glProgram = programs.find((program) => program.name === 'cards').glProgram;
 
   gl.useProgram(glProgram);
 
@@ -51,9 +51,9 @@ export function init({
 }
 
 export function draw({totalCards}) {
-  const { gl, cardTexture } = global;
+  const { gl, cardsTexture } = global;
 
-  const glProgram = global.programs.find((program) => program.name === 'card').glProgram;
+  const glProgram = global.programs.find((program) => program.name === 'cards').glProgram;
   gl.useProgram(glProgram);
 
   var u_color = gl.getUniformLocation(glProgram, "u_color");
@@ -63,7 +63,7 @@ export function draw({totalCards}) {
   const u_textureLocation = gl.getUniformLocation(glProgram, "u_texture");
   gl.uniform1i(u_textureLocation, 0);
   gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D_ARRAY, cardTexture);
+  gl.bindTexture(gl.TEXTURE_2D_ARRAY, cardsTexture);
 
   gl.bindVertexArray(CARDS_VAO);
   gl.drawElementsInstanced(

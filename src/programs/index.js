@@ -1,5 +1,6 @@
 export * as basic from './basic';
-export * as card from './card';
+export * as cards from './cards';
+export * as cardsSelection from './cards-selection';
 export * as points from './points';
 export * as lines from './lines';
 export * as quad from './quad';

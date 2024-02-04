@@ -40,8 +40,8 @@ export function init() {
 export function draw() {
   const { gl } = global;
 
-  const glProgramCard = global.programs.find((program) => program.name === 'grid').glProgram;
-  gl.useProgram(glProgramCard);
+  const glProgramCards = global.programs.find((program) => program.name === 'grid').glProgram;
+  gl.useProgram(glProgramCards);
 
   gl.bindVertexArray(GRID_VAO);
   gl.drawElements(

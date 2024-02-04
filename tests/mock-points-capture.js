@@ -21,7 +21,7 @@ function POINT_DATA_ADJUST(points) {
 }
 
 export function POINTS_CAPTURE() {
-  const MOCK_totalPoints = 500;
+  const MOCK_totalPoints = 250;
   const MOCK_pointsData = sinData({
     totalPoints: MOCK_totalPoints,
     amplitude: 1.0,
@@ -41,7 +41,7 @@ export function POINTS_CAPTURE() {
 
   document.addEventListener('point-adjust', (e) => {
     global.dataStorage.replaceData(0, new Float32Array(POINT_DATA_ADJUST(pointsData).flat()));
-    const detailWithRandomNoise = pointsData.map((point, idx) => {
+    const detailWithRandomNoise = pointsData.map((point) => {
       return [point[0] + (Math.random() - 0.5) * 0.01, point[1] + (Math.random() - 0.5) * 0.2];
     });
     global.dataStorage.replaceData(1, new Float32Array(POINT_DATA_ADJUST(detailWithRandomNoise).flat()));

@@ -11,14 +11,14 @@ export function init() {
 }
 
 export function draw(index) {
-  const { gl, cardFrameBuffers, cardTextureSize, dataStorage } = global;
+  const { gl, cardsFrameBuffers, cardsTextureSize, dataStorage } = global;
 
 
   const {glProgram} = global.programs.find((program) => program.name === 'points');
   gl.useProgram(glProgram);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffers[index + 1]);
-  gl.viewport(0, 0, cardTextureSize, cardTextureSize);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, cardsFrameBuffers[index + 1]);
+  gl.viewport(0, 0, cardsTextureSize, cardsTextureSize);
 
   gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);

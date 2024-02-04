@@ -1,7 +1,7 @@
 import { mat4 } from 'gl-matrix';
 import { global, getSquareGeometry } from '@/helpers/index';
 
-let pointsVAO;
+let VAO;
 
 export function init() {
   const squareGeometry = getSquareGeometry();
@@ -17,18 +17,18 @@ export function init() {
   mat4.translate(squares[1].modelMatrix, squares[1].modelMatrix, [-0.25, -0.25, 0]);
 
   const { gl, programs } = global;
-  const glProgramCard = programs.find((program) => program.name === 'card').glProgram;
+  const glProgramCards = programs.find((program) => program.name === 'cards').glProgram;
 
-  gl.useProgram(glProgramCard);
+  gl.useProgram(glProgramCards);
 
-  pointsVAO = gl.createVertexArray();
-  gl.bindVertexArray(pointsVAO);
+  VAO = gl.createVertexArray();
+  gl.bindVertexArray(VAO);
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, 4 * 4 * 3, gl.DYNAMIC_DRAW);
 
-  const coordinatesLayout = gl.getAttribLocation(glProgramCard, 'coordinates');
+  const coordinatesLayout = gl.getAttribLocation(glProgramCards, 'coordinates');
   gl.vertexAttribPointer(coordinatesLayout, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(coordinatesLayout);
 
@@ -37,7 +37,7 @@ export function init() {
   gl.bufferData(gl.ARRAY_BUFFER, 40 * 16 * squares.length, gl.DYNAMIC_DRAW);
   gl.bindBuffer(gl.ARRAY_BUFFER, mboModels);
 
-  const locModel = gl.getAttribLocation(glProgramCard, "model_matrix");
+  const locModel = gl.getAttribLocation(glProgramCards, "model_matrix");
   for (let i = 0; i < 4; i++) {
     gl.vertexAttribPointer(locModel + i, 4, gl.FLOAT, false, 4 * 16, 4 * 4 * i);
     gl.vertexAttribDivisor(locModel + i, 1);
@@ -68,16 +68,16 @@ export function init() {
 export function draw() {
   const { gl } = global;
 
-  const glProgram = global.programs.find((program) => program.name === 'card').glProgram;
+  const glProgram = global.programs.find((program) => program.name === 'cards').glProgram;
   gl.useProgram(glProgram);
 
   var u_color = gl.getUniformLocation(glProgram, "u_color");
   gl.uniform3fv(u_color, [0, 0, 1]);
 
-  // const index = gl.getUniformBlockIndex(glProgramCard, "Settings");
-  // gl.uniformBlockBinding(glProgramCard, index, 0);
+  // const index = gl.getUniformBlockIndex(glProgramCards, "Settings");
+  // gl.uniformBlockBinding(glProgramCards, index, 0);
 
-  gl.bindVertexArray(pointsVAO);
+  gl.bindVertexArray(VAO);
   gl.drawElementsInstanced(
     gl.TRIANGLE_STRIP,
     4,

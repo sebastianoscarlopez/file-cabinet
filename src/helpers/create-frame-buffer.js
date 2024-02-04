@@ -1,8 +1,7 @@
 import { global } from '@/helpers/index';
 
-export function createGenericFrameBufferWithTexture(width, height) {
-  const { gl, CARDS_MAX } = global;
-  const depth = CARDS_MAX + 1; // +1 for the base texture
+export function createGenericFrameBufferWithTexture2DArray(width, height, depth) {
+  const { gl } = global;
 
   const texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, texture);
