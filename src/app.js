@@ -102,8 +102,11 @@ function CARDS_SETUP({
   });
 }
 
-
 function renderLoop() {
+  if(!global.initiated) {
+    requestAnimationFrame(renderLoop);
+    return;
+  }
   const { gl, clientWidth, clientHeight, dataStorage } = global;
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 

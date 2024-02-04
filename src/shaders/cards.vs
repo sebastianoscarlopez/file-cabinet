@@ -13,7 +13,6 @@ uniform Settings {
 };
 
 void main() {
-  mat4 identity = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   gl_Position = u_projection_matrix * u_view_matrix * model_matrix * vec4(coordinates, 1.0f);
   cardIndex = gl_InstanceID;
   if(gl_VertexID == 1 || gl_VertexID == 3) {

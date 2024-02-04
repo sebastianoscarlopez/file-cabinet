@@ -1,11 +1,9 @@
 import { global } from '@/helpers/index';
+const uboVariableNames = ["u_view_matrix", "u_projection_matrix"];
+const uboVariableInfo = {};
 
-export function setupUniformSettings(glProgram) {
+export function setupUniformSettings(glProgram, uboBuffer) {
   const { gl, viewMatrix, projectionMatrix } = global;
-
-  const uboBuffer = gl.createBuffer();
-  const uboVariableNames = ["u_view_matrix", "u_projection_matrix"];
-  const uboVariableInfo = {};
 
   gl.useProgram(glProgram);
   const blockIndex = gl.getUniformBlockIndex(glProgram, "Settings");
@@ -34,12 +32,15 @@ export function setupUniformSettings(glProgram) {
     };
   });
 
+  gl.bindBuffer(gl.UNIFORM_BUFFER, uboBuffer);
+  gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, uboBuffer);
   gl.bufferSubData(
     gl.UNIFORM_BUFFER,
     uboVariableInfo["u_view_matrix"].offset,
     viewMatrix,
     0
   );
+  
   gl.bufferSubData(
     gl.UNIFORM_BUFFER,
     uboVariableInfo["u_projection_matrix"].offset,
@@ -47,4 +48,6 @@ export function setupUniformSettings(glProgram) {
     0
   );
   gl.bindBuffer(gl.UNIFORM_BUFFER, null);
+
+  global.initiated = true;
 }

@@ -1,4 +1,5 @@
 import { global, getSquareGeometry } from '@/helpers/index';
+import { setupUniformSettings } from '@/programs/shared-settings';
 
 let CARDS_VAO;
 
@@ -52,14 +53,14 @@ export function init({
 export function draw({totalCards}) {
   const { gl, cardTexture } = global;
 
-  const glProgramCard = global.programs.find((program) => program.name === 'card').glProgram;
-  gl.useProgram(glProgramCard);
+  const glProgram = global.programs.find((program) => program.name === 'card').glProgram;
+  gl.useProgram(glProgram);
 
-  var u_color = gl.getUniformLocation(glProgramCard, "u_color");
+  var u_color = gl.getUniformLocation(glProgram, "u_color");
   gl.uniform3fv(u_color, [0, 0, 1]);
 
 
-  const u_textureLocation = gl.getUniformLocation(glProgramCard, "u_texture");
+  const u_textureLocation = gl.getUniformLocation(glProgram, "u_texture");
   gl.uniform1i(u_textureLocation, 0);
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, cardTexture);
