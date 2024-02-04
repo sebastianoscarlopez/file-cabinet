@@ -1,64 +1,39 @@
 import { mat4 } from 'gl-matrix';
 import { global } from '@/helpers/index';
 
-let pointsVAO;
-
-export function init({
-  vertexBuffer,
-  modelsBuffer
-}) {
+export function init() {
   const { gl, programs } = global;
 
-  const glProgram = programs.find((program) => program.name === 'points').glProgram;
+  const programConfig = programs.find((program) => program.name === 'points');
+  gl.useProgram(programConfig.program);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+}
+
+export function draw(index) {
+  const { gl, cardFrameBuffers, cardTextureSize, dataStorage } = global;
+
+
+  const {glProgram} = global.programs.find((program) => program.name === 'points');
   gl.useProgram(glProgram);
 
-  pointsVAO = gl.createVertexArray();
-  gl.bindVertexArray(pointsVAO);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffers[index + 1]);
+  gl.viewport(0, 0, cardTextureSize, cardTextureSize);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, modelsBuffer);
+  gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  const locModel = gl.getAttribLocation(glProgram, "model_matrix");
-  for (let i = 0; i < 4; i++) {
-    gl.vertexAttribPointer(locModel + i, 4, gl.FLOAT, false, 4 * 16, 4 * 4 * i);
-    gl.vertexAttribDivisor(locModel + i, 1);
-    gl.enableVertexAttribArray(locModel + i);
-  }
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+  gl.bindBuffer(gl.ARRAY_BUFFER, dataStorage.memoryBuffer[index]);
   const coordinatesLayout = 0;
   gl.vertexAttribPointer(coordinatesLayout, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(coordinatesLayout);
 
-  gl.bindVertexArray(null);
-  gl.bindBuffer(gl.ARRAY_BUFFER, null);
-  gl.disableVertexAttribArray(coordinatesLayout);
-  for (let i = 0; i < 4; i++) {
-    gl.disableVertexAttribArray(locModel + i);
-  }
-}
-
-export function draw(totalPoints) {
-
-  const { gl } = global;
-
-  const glProgram = global.programs.find((program) => program.name === 'points').glProgram;
-  gl.useProgram(glProgram);
-
-  // const index = gl.getUniformBlockIndex(glProgram, "Settings");
-  // gl.uniformBlockBinding(glProgram, index, 0);
-
-
-  // var u_color = gl.getUniformLocation(glProgramCard, "u_color");
-
-  // gl.uniform3fv(u_color, [0, 0, 1]);
-
-
-  gl.bindVertexArray(pointsVAO);
-  gl.drawArraysInstanced(
+  const totalPoints = dataStorage.memoryBufferOffset[index] / 4 / 2; // 2 floats per point
+  gl.drawArrays(
     gl.POINTS,
     0,
-    totalPoints,
-    1
+    totalPoints
   );
-  gl.bindVertexArray(null);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };

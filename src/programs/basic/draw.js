@@ -7,7 +7,6 @@ export function init() {
   const { gl, programs } = global;
   const glProgramBasic = programs.find((program) => program.name === 'basic').glProgram;
 
-  console.log(glProgramBasic)
   gl.useProgram(glProgramBasic);
 
   basicVAO = gl.createVertexArray();

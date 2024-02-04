@@ -4,7 +4,6 @@ import { grid } from './programs/index';
 export function createCardBaseTexture() {
   const { gl, CARDS_MAX, clientHeight } = global;
 
-  console.log(gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
   const cardTextureSize = gl.getParameter(gl.MAX_3D_TEXTURE_SIZE);
 
   const {
@@ -24,5 +23,4 @@ export function createCardBaseTexture() {
   global.cardFrameBuffers = cardFrameBuffers;
   global.cardTexture = cardTexture;
   global.cardTextureSize = cardTextureSize;
-  console.log(global)
 }

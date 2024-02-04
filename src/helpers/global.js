@@ -1,9 +1,12 @@
-const CARDS_MAX = 30;
-
 export default {
-  gl: null,
-  viewMatrix: null,
-  projectionMatrix: null,
+  CARDS_MAX: 30,
+  dataStorageMaxMemory: 4 * 5000,
+  gl: undefined,
+  viewMatrix: undefined,
+  projectionMatrix: undefined,
   programs: [],
-  CARDS_MAX
+  cardFrameBuffers: undefined,
+  cardTexture: undefined,
+  cardTextureSize: undefined,
+  dataStorage: undefined,
 }

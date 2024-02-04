@@ -3,7 +3,7 @@ import { mat4, vec4 } from 'gl-matrix';
 import { global } from '@/helpers/index';
 
 import {
-  quad, lines, card, basic, cursor, ray,
+  quad, points, card, basic, cursor, ray,
   // , getCardProgram, getPointsProgram, drawSquares, drawPoints
 } from './programs/index';
 import { DataStorage } from '@/data-storage';
@@ -87,13 +87,10 @@ const startApp = async () => {
 function POINTS_SETUP({
   modelsBuffer
 }) {
-  global.cardOneStorage = new DataStorage();
-  global.cardOneStorage.init();
+  global.dataStorage = new DataStorage();
+  global.dataStorage.init();
 
-  lines.init({
-    vertexBuffer: global.cardOneStorage.memoryBuffer,
-    modelsBuffer
-  });
+  points.init();
 }
 
 function CARDS_SETUP({
@@ -107,7 +104,7 @@ function CARDS_SETUP({
 
 
 function renderLoop() {
-  const { gl, clientWidth, clientHeight, cardOneStorage } = global;
+  const { gl, clientWidth, clientHeight, dataStorage } = global;
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 
   gl.depthFunc(gl.ALWAYS)
@@ -116,7 +113,7 @@ function renderLoop() {
   // gl.disable(gl.STENCIL_TEST);
 
   // ray.draw();
-  // const totalPoints = cardOneStorage.memoryBufferOffset / 4 / 2;
+  // const totalPoints = dataStorage.memoryBufferOffset / 4 / 2;
   // console.log(totalPoints)
   // lines.draw(totalPoints);
 
@@ -128,12 +125,14 @@ function renderLoop() {
 
   // gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffers);
   // gl.viewport(0, 0, cardTextureSize, cardTextureSize);
-  lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
+  for (let i = 0; i < CARD_squares.length; i++) {
+    points.draw(i);
+  }
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight);
   card.draw({
-    totalCards: 2
+    totalCards: CARD_squares.length
   });
 
   

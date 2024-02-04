@@ -2,33 +2,35 @@ import { global } from '@/helpers/index';
 
 export class DataStorage {
   constructor() {
-    this.MAX_MEMORY = 4 * 1000;
-    this.memoryBuffer = null;
-    this.memoryBufferOffset = 0;
+    this.memoryBuffer = [];
+    this.memoryBufferOffset = [];
   }
 
   init() {
-    const { gl } = global;
+    const { gl, CARDS_MAX, dataStorageMaxMemory } = global;
 
-    this.memoryBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, this.MAX_MEMORY, gl.DYNAMIC_DRAW);
+    for (let i = 0; i < CARDS_MAX; i++) {
+      this.memoryBufferOffset[i] = 0;
+      this.memoryBuffer[i] = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer[i]);
+      gl.bufferData(gl.ARRAY_BUFFER, dataStorageMaxMemory, gl.DYNAMIC_DRAW);
+    }
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
-  addData(data) {
+  addData(index, data) {
     const { gl } = global;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer);
-    gl.bufferSubData(gl.ARRAY_BUFFER, this.memoryBufferOffset, data);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer[index]);
+    gl.bufferSubData(gl.ARRAY_BUFFER, this.memoryBufferOffset[index], data);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    this.memoryBufferOffset += data.byteLength;
+    this.memoryBufferOffset[index] += data.byteLength;
   }
 
-  replaceData(data) {
+  replaceData(index, data) {
     const { gl } = global;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer[index]);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    this.memoryBufferOffset = data.byteLength;
+    this.memoryBufferOffset[index] = data.byteLength;
   }
 }

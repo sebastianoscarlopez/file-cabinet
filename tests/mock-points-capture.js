@@ -35,11 +35,16 @@ export function POINTS_CAPTURE() {
   // const MOCK_pointsData = [0, 0, -1, -1, -1, 1, 1, 1, 1, -1];
 
   document.addEventListener('point-added', (e) => {
-    global.cardOneStorage.addData(new Float32Array(e.detail));
+    global.dataStorage.addData(0, new Float32Array(e.detail));
+    global.dataStorage.addData(1, new Float32Array(e.detail));
   });
 
   document.addEventListener('point-adjust', (e) => {
-    global.cardOneStorage.replaceData(new Float32Array(POINT_DATA_ADJUST(pointsData).flat()));
+    global.dataStorage.replaceData(0, new Float32Array(POINT_DATA_ADJUST(pointsData).flat()));
+    const detailWithRandomNoise = pointsData.map((point, idx) => {
+      return [point[0] + (Math.random() - 0.5) * 0.01, point[1] + (Math.random() - 0.5) * 0.2];
+    });
+    global.dataStorage.replaceData(1, new Float32Array(POINT_DATA_ADJUST(detailWithRandomNoise).flat()));
   });
 
   let idx = 0;

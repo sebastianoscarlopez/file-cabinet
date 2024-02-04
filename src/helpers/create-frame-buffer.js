@@ -11,8 +11,6 @@ export function createGenericFrameBufferWithTexture(width, height) {
   gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   if(!gl.isTexture(texture)) {
     console.log('texture failed');
-  } else {
-    console.log('texture success');
   }
 
   const frameBuffers = [];
@@ -20,8 +18,6 @@ export function createGenericFrameBufferWithTexture(width, height) {
     frameBuffers[i] = gl.createFramebuffer();
     if(!frameBuffers[i]) {
       console.log(`framebuffer[${i}] failed`);
-    } else {
-      console.log(`framebuffer[${i}] success`);
     }
 
     const depthBuffer = gl.createRenderbuffer();
@@ -35,9 +31,6 @@ export function createGenericFrameBufferWithTexture(width, height) {
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
       console.log(`framebuffer[${i}] not complete: ${status}`);
-    }
-    else {
-      console.log(`framebuffer[${i}] complete`);
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
