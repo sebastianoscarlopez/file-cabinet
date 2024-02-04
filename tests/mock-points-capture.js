@@ -7,7 +7,7 @@ const POINTS_DATA_SETTINGS = {
     y: 1
   },
   offset: {
-    x: 0.0,
+    x: -1.0,
     y: 0.0
   }
 }
@@ -22,17 +22,17 @@ function POINT_DATA_ADJUST(points) {
 
 export function POINTS_CAPTURE() {
   const MOCK_totalPoints = 500;
-  // const MOCK_pointsData = sinData({
-  //   totalPoints: MOCK_totalPoints,
-  //   amplitude: 1.0,
-  //   frequency: 10,
-  //   phase: 0,
-  //   xStart: 0,
-  //   xEnd: 1
-  // });
+  const MOCK_pointsData = sinData({
+    totalPoints: MOCK_totalPoints,
+    amplitude: 1.0,
+    frequency: 2,
+    phase: 0,
+    xStart: 0,
+    xEnd: 2
+  });
 
   const pointsData = [];
-  const MOCK_pointsData = [0, 0, -1, -1, -1, 1, 1, 1, 1, -1];
+  // const MOCK_pointsData = [0, 0, -1, -1, -1, 1, 1, 1, 1, -1];
 
   document.addEventListener('point-added', (e) => {
     global.cardOneStorage.addData(new Float32Array(e.detail));

@@ -4,7 +4,7 @@ let GRID_VAO;
 
 export function init() {
 
-  const { gl, programs, CARD_SIZE } = global;
+  const { gl, programs } = global;
   const glProgram = programs.find((program) => program.name === 'grid').glProgram;
 
   gl.useProgram(glProgram);
@@ -13,7 +13,10 @@ export function init() {
 
   gl.bindVertexArray(GRID_VAO);
 
-  const { vertices, indices } = getSquareAtBottomLeftCorner(CARD_SIZE);
+  const { vertices, indices } = getSquareGeometry({
+    width: 2,
+    height: 2
+  });
 
   const vertexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -32,20 +35,6 @@ export function init() {
   gl.bindVertexArray(null);
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
   gl.disableVertexAttribArray(coordinatesLayout);
-}
-
-function getSquareAtBottomLeftCorner(size) {
-  const length = size * 2;
-  const squareGeometry = getSquareGeometry({
-    width: length,
-    height: length
-  });
-
-  const vertices = squareGeometry.vertices.map((vertex) => vertex - 1.0 + length / 2);
-  return {
-    vertices: vertices,
-    indices: squareGeometry.indices
-  }
 }
 
 export function draw() {

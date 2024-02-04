@@ -27,7 +27,7 @@ const CARD_squares = [
 let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords;
 
 const startApp = async () => {
-  const { gl, CARDS_MAX, CARD_SIZE, programs, clientWidth, clientHeight } = global;
+  const { gl, CARDS_MAX, programs, clientWidth, clientHeight } = global;
 
   await setupPrograms(programs);
   basic.init();
@@ -107,7 +107,7 @@ function CARDS_SETUP({
 
 
 function renderLoop() {
-  const { gl, cardFrameBuffer, cardTextureSize, clientWidth, clientHeight, cardOneStorage } = global;
+  const { gl, clientWidth, clientHeight, cardOneStorage } = global;
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 
   gl.depthFunc(gl.ALWAYS)
@@ -126,9 +126,9 @@ function renderLoop() {
   // gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
   // gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
 
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffer);
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffers);
   // gl.viewport(0, 0, cardTextureSize, cardTextureSize);
-  // lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
+  lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight);

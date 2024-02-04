@@ -2,14 +2,15 @@
 precision mediump float;
 
 in vec2 st;
+flat in int cardIndex;
 
-uniform sampler2D u_texture0;
+uniform mediump sampler2DArray u_texture0;
 
 out vec4 FragColor;
 
 void main() {
-  vec4 texColor = texture(u_texture0, st);
-  // if(texColor.a < 1.0)
-  //   discard;
-  FragColor = texColor;
+  vec4 texColorBase = texture(u_texture0, vec3(st, 0));
+  vec4 texColorPlot = texture(u_texture0, vec3(st, cardIndex));
+
+  FragColor = texColorPlot.a > 0.0f ? texColorPlot : texColorBase;
 }

@@ -48,18 +48,17 @@ export function draw(totalLines) {
 }
 
 function drawLines(totalLines) {
-  const { gl, CARD_SIZE, maxTextureSize, maxFrameBuffer, cardFrameBuffer, cardTexture, cardTextureSize, clientWidth, clientHeight } = global;
+  const { gl, cardFrameBuffers, cardTextureSize, clientWidth, clientHeight } = global;
 
-  const {glProgram, frameBuffer, vao} = global.programs.find((program) => program.name === 'lines');
+  const {glProgram, vao} = global.programs.find((program) => program.name === 'lines');
   gl.useProgram(glProgram);
 
-  const u_card_sizeLocation = gl.getUniformLocation(glProgram, "u_card_size");
-  gl.uniform1f(u_card_sizeLocation, CARD_SIZE);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffers[1]);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, clientWidth, clientHeight);
+  // gl.viewport(0, 0, clientWidth, clientHeight);
+    gl.viewport(0, 0, cardTextureSize, cardTextureSize);
 
-  gl.clearColor(0.0, 0.0, 0.0, 1.0); // Set clear color (the color is slightly changed)
+  gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.bindVertexArray(vao);
@@ -71,8 +70,5 @@ function drawLines(totalLines) {
   );
   gl.bindVertexArray(null);
 
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, maxFrameBuffer);
-  // gl.viewport(0, 0, maxTextureSize, maxTextureSize);
-
-
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };

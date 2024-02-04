@@ -4,14 +4,15 @@ import { grid } from './programs/index';
 export function createCardBaseTexture() {
   const { gl, CARDS_MAX, clientHeight } = global;
 
-  const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+  console.log(gl.getParameter(gl.MAX_3D_TEXTURE_SIZE));
+  const cardTextureSize = gl.getParameter(gl.MAX_3D_TEXTURE_SIZE);
 
   const {
-    frameBuffer: maxFrameBuffer, texture: maxTexture
-  } = createGenericFrameBufferWithTexture(maxTextureSize, maxTextureSize);
+    frameBuffers: cardFrameBuffers, texture: cardTexture
+  } = createGenericFrameBufferWithTexture(cardTextureSize, cardTextureSize);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, maxFrameBuffer);
-  gl.viewport(0, 0, maxTextureSize, maxTextureSize);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffers[0]);
+  gl.viewport(0, 0, cardTextureSize, cardTextureSize);
 
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -20,17 +21,7 @@ export function createCardBaseTexture() {
   grid.init();
   grid.draw();
 
-  global.maxFrameBuffer = maxFrameBuffer;
-  global.maxTexture = maxTexture;
-  global.maxTextureSize = maxTextureSize;
-
-  const cardTextureSize = maxTextureSize / (CARDS_MAX + 1);
-
-  const {
-    frameBuffer: cardFrameBuffer, texture: cardTexture
-  } = createGenericFrameBufferWithTexture(cardTextureSize, cardTextureSize);
-
-  global.cardFrameBuffer = cardFrameBuffer;
+  global.cardFrameBuffers = cardFrameBuffers;
   global.cardTexture = cardTexture;
   global.cardTextureSize = cardTextureSize;
   console.log(global)
