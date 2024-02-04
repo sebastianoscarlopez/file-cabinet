@@ -24,7 +24,7 @@ const CARD_squares = [
   },
 ];
 
-let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords, CARD_base_texture;
+let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords;
 
 const startApp = async () => {
   const { gl, CARDS_MAX, CARD_SIZE, programs, clientWidth, clientHeight } = global;
@@ -32,8 +32,7 @@ const startApp = async () => {
   await setupPrograms(programs);
   basic.init();
   
-  const { cardFrameBuffer, cardTexture } = createCardBaseTexture();
-  CARD_base_texture = cardTexture;
+  createCardBaseTexture();
 
   CARDS_mboModels = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
@@ -51,9 +50,9 @@ const startApp = async () => {
     modelsBuffer: CARDS_mboModels
   });
 
-  // POINTS_SETUP({
-  //   modelsBuffer: CARDS_mboModels
-  // });
+  POINTS_SETUP({
+    modelsBuffer: CARDS_mboModels
+  });
 
   // CURSOR_boCoords = gl.createBuffer();
   // gl.bindBuffer(gl.ARRAY_BUFFER, CURSOR_boCoords);
@@ -77,25 +76,25 @@ const startApp = async () => {
 
   // document.addEventListener('mousemove', mouseHandler);
 
-  // POINTS_CAPTURE();
+  POINTS_CAPTURE();
   
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight );
 
-  renderLoop(global.cardOneStorage);
+  renderLoop();
 }
 
-// function POINTS_SETUP({
-//   modelsBuffer
-// }) {
-//   global.cardOneStorage = new DataStorage();
-//   global.cardOneStorage.init();
+function POINTS_SETUP({
+  modelsBuffer
+}) {
+  global.cardOneStorage = new DataStorage();
+  global.cardOneStorage.init();
 
-//   lines.init({
-//     vertexBuffer: global.cardOneStorage.memoryBuffer,
-//     modelsBuffer
-//   });
-// }
+  lines.init({
+    vertexBuffer: global.cardOneStorage.memoryBuffer,
+    modelsBuffer
+  });
+}
 
 function CARDS_SETUP({
   modelsBuffer
@@ -108,7 +107,7 @@ function CARDS_SETUP({
 
 
 function renderLoop() {
-  const { gl, programs, CARD_SIZE, cardOneStorage } = global;
+  const { gl, cardFrameBuffer, cardTextureSize, clientWidth, clientHeight, cardOneStorage } = global;
   gl.clearColor(0.1, 0.2, 0.2, 1.0);
 
   gl.depthFunc(gl.ALWAYS)
@@ -126,26 +125,22 @@ function renderLoop() {
 
   // gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
   // gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-  
-  const programCardConfig = programs.find((program) => program.name === 'card');
 
-  const u_textureLocation = gl.getUniformLocation(programCardConfig.glProgram, "u_texture");
-  gl.uniform1i(u_textureLocation, 0);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, CARD_base_texture);
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, cardFrameBuffer);
+  // gl.viewport(0, 0, cardTextureSize, cardTextureSize);
+  // lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
-  const u_card_sizeLocation = gl.getUniformLocation(programCardConfig.glProgram, "u_card_size");
-  gl.uniform1f(u_card_sizeLocation, CARD_SIZE);
-
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, clientWidth, clientHeight);
   card.draw({
     totalCards: 2
   });
+
   
   // gl.depthFunc(gl.ALWAYS)
 
   // gl.stencilFunc(gl.EQUAL, 1, 0xFF);
 
-  // lines.draw(cardOneStorage.memoryBufferOffset / 4 / 2);
 
   // gl.disable(gl.STENCIL_TEST);
   // gl.depthFunc(gl.LESS)
@@ -162,7 +157,7 @@ function renderLoop() {
   // // gl.uniform1i(u_texture1Location, 1);
 
   // gl.activeTexture(gl.TEXTURE0);
-  // gl.bindTexture(gl.TEXTURE_2D, CARD_base_texture);
+  // gl.bindTexture(gl.TEXTURE_2D, cardTexture);
   // // gl.activeTexture(gl.TEXTURE1);
   // // gl.bindTexture(gl.TEXTURE_2D, QUAD_texture);
 

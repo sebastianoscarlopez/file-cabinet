@@ -8,9 +8,9 @@ export function createGenericFrameBufferWithTexture(width, height) {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width , height , 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   if(!gl.isTexture(texture)) {
-    console.log('cardTexture failed');
+    console.log('texture failed');
   } else {
-    console.log('cardTexture success');
+    console.log('texture success');
   }
 
   const frameBuffer = gl.createFramebuffer();

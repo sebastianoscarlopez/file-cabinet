@@ -50,7 +50,7 @@ export function init({
 }
 
 export function draw({totalCards}) {
-  const { gl } = global;
+  const { gl, maxTexture, CARD_SIZE } = global;
 
   const glProgramCard = global.programs.find((program) => program.name === 'card').glProgram;
   gl.useProgram(glProgramCard);
@@ -58,8 +58,14 @@ export function draw({totalCards}) {
   var u_color = gl.getUniformLocation(glProgramCard, "u_color");
   gl.uniform3fv(u_color, [0, 0, 1]);
 
-  // const index = gl.getUniformBlockIndex(glProgramCard, "Settings");
-  // gl.uniformBlockBinding(glProgramCard, index, 0);
+
+  const u_textureLocation = gl.getUniformLocation(glProgramCard, "u_texture");
+  gl.uniform1i(u_textureLocation, 0);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, maxTexture);
+
+  const u_card_sizeLocation = gl.getUniformLocation(glProgramCard, "u_card_size");
+  gl.uniform1f(u_card_sizeLocation, CARD_SIZE);
 
   gl.bindVertexArray(CARDS_VAO);
   gl.drawElementsInstanced(

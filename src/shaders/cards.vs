@@ -17,9 +17,9 @@ void main() {
   mat4 identity = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   gl_Position = u_projection_matrix * u_view_matrix * model_matrix * vec4(coordinates, 1.0f);
   if(gl_VertexID == 1 || gl_VertexID == 3) {
-    st.x = u_card_size;
+    st.x = 1.0;//u_card_size;
   }
   if(gl_VertexID == 2 || gl_VertexID == 3) {
-    st.y = u_card_size;
+    st.y = 1.0;//u_card_size;
   }
 }
