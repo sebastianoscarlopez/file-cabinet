@@ -1,4 +1,4 @@
-import { mat4, vec4 } from 'gl-matrix';
+import { mat4 } from 'gl-matrix';
 
 import { global } from '@/helpers/index';
 
@@ -26,10 +26,8 @@ const CARDS_squares = [
   },
 ];
 
-let CARDS_mboModels, CURSOR_boCoords, RAY_boCoords;
-
 const startApp = async () => {
-  const { gl, CARDS_MAX, programs, clientWidth, clientHeight } = global;
+  const { gl, canvas, programs, clientWidth, clientHeight } = global;
 
   await setupPrograms(programs);
   basic.init();
@@ -37,13 +35,7 @@ const startApp = async () => {
   createCardsFrameBuffers();
   createSelectionFrameBuffer();
 
-  CARDS_mboModels = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
-  gl.bufferData(gl.ARRAY_BUFFER, 40 * 16 * CARDS_MAX, gl.DYNAMIC_DRAW);
-
-  const data = new Float32Array(CARDS_squares.flatMap((square) => [...square.modelMatrix]));
-  gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
+  const CARDS_mboModels = gl.createBuffer();
 
   quad.init({
     modelsBuffer: CARDS_mboModels
@@ -57,12 +49,15 @@ const startApp = async () => {
     modelsBuffer: CARDS_mboModels
   });
 
-  CURSOR_boCoords = gl.createBuffer();
+  const CURSOR_boCoords = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, CURSOR_boCoords);
   gl.bufferData(gl.ARRAY_BUFFER, 4 * 2, gl.DYNAMIC_DRAW);
   cursor.init({
     cursorBuffer: CURSOR_boCoords
   });
+
+  canvas.addEventListener('mousemove', mouseMoveHandler.bind(null, CURSOR_boCoords));
+  cardsHandlerInit(CARDS_mboModels, CARDS_squares);
 
   // RAY_boCoords = gl.createBuffer();
   // gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
@@ -77,8 +72,6 @@ const startApp = async () => {
   //   0.0, 0.0002, 0.998999
   // ]));
 
-  document.addEventListener('mousemove', mouseMoveHandler.bind(null, CURSOR_boCoords));
-  cardsHandlerInit();
 
   POINTS_CAPTURE();
   
