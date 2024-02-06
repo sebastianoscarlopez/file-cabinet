@@ -3,7 +3,7 @@ import { mat4 } from 'gl-matrix';
 import { global } from '@/helpers/index';
 
 import {
-  quad, points, cards, cardsSelection, basic, cursor, ray,
+  quad, points, cards, cardsSelection, basic, cursor, text,
 } from './programs/index';
 import { DataStorage } from '@/data-storage';
 import { setupPrograms } from '@/programs/setup';
@@ -15,14 +15,14 @@ import { createSelectionFrameBuffer } from './selection-framebuffer';
 
 
 let modelA = mat4.fromYRotation(mat4.create(), 0.5);
-modelA = mat4.translate(modelA, modelA, [-0.5, -0.0, -0.5]);
+modelA = mat4.translate(modelA, modelA, [-0.5, -0.0, -1.5]);
 
 const CARDS_squares = [
   {
     modelMatrix: modelA
   },
   {
-    modelMatrix: mat4.create()
+    modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.5, 0.0, -1.5])
   },
 ];
 
@@ -72,11 +72,13 @@ const startApp = async () => {
   //   0.0, 0.0002, 0.998999
   // ]));
 
+  text.init();
 
   POINTS_CAPTURE();
   
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight );
+
 
   renderLoop();
 }
@@ -146,6 +148,8 @@ function renderLoop() {
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight);
+
+  text.draw();
   cards.draw({
     totalCards: CARDS_squares.length
   });

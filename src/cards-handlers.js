@@ -26,7 +26,7 @@ export function cardsUpdateModels() {
   const { CARDS_mboModels, CARDS_squares } = state;
 
   gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
-  gl.bufferData(gl.ARRAY_BUFFER, 40 * 16 * CARDS_MAX, gl.DYNAMIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, 4 * 16 * CARDS_MAX, gl.DYNAMIC_DRAW);
 
   const data = new Float32Array(CARDS_squares.flatMap((square) => [...square.modelMatrix]));
   gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
