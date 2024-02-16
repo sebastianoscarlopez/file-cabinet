@@ -1,14 +1,15 @@
 import { global, getSquareGeometry } from '@/helpers/index';
-import { setupUniformSettings } from '@/programs/shared-settings';
 
 let CARDS_VAO;
+let models;
 
 export function init({
   modelsBuffer
 }) {
+  models = modelsBuffer;
 
   const { gl, programs } = global;
-  const glProgram = programs.find((program) => program.name === 'cards').glProgram;
+  const glProgram = programs.find((program) => program.name === 'cardHover').glProgram;
 
   gl.useProgram(glProgram);
 
@@ -50,28 +51,32 @@ export function init({
   }
 }
 
-export function draw({totalCards}) {
-  const { gl, cardsTexture } = global;
+export function draw() {
+  const { gl, selectedCardIndex, cursorData } = global;
+  const hoverCardIndex = cursorData.pixels[0];
 
-  const glProgram = global.programs.find((program) => program.name === 'cards').glProgram;
+  if(!selectedCardIndex && !hoverCardIndex) {
+    return;
+  }
+
+  const glProgram = global.programs.find((program) => program.name === 'cardHover').glProgram;
   gl.useProgram(glProgram);
 
-  var u_color = gl.getUniformLocation(glProgram, "u_color");
-  gl.uniform3fv(u_color, [0, 0, 1]);
-
-
-  const u_textureLocation = gl.getUniformLocation(glProgram, "u_texture");
-  gl.uniform1i(u_textureLocation, 0);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D_ARRAY, cardsTexture);
-
   gl.bindVertexArray(CARDS_VAO);
-  gl.drawElementsInstanced(
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, models);
+  const locModel = gl.getAttribLocation(glProgram, "model_matrix");
+  for (let i = 0; i < 4; i++) {
+    const offsetIndex = (selectedCardIndex || hoverCardIndex) - 1;
+    gl.vertexAttribPointer(locModel + i, 4, gl.FLOAT, false, 4 * 16, (16 * 4 * offsetIndex) + 4 * 4 * i);
+    gl.enableVertexAttribArray(locModel + i);
+  }
+
+  gl.drawElements(
     gl.TRIANGLE_STRIP,
     4,
     gl.UNSIGNED_SHORT,
-    0,
-    2
+    0
   );
   gl.bindVertexArray(null);
 }

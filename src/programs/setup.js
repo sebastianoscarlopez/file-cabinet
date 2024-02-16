@@ -1,17 +1,18 @@
 import { global } from '@/helpers/index';
 import {
-  basic, points, cards, cardsSelection, cursor, ray, lines, quad, grid, text
+  basic, points, cards, cardHover, cardsSelection, cursor, ray, lines, quad, grid, text
 } from './index';
 import { setupUniformSettings } from '@/programs/shared-settings';
 import { glMatrix, mat4 } from 'gl-matrix';
 
 export async function setupPrograms(programs) {
-  const [glProgramBasic, glProgramPoints, glProgramLines, glQuad, glProgramCards, glProgramCardsSelection, glProgramCursor, glProgramRay, glProgramGrid, glProgramText] = await Promise.all([
+  const [glProgramBasic, glProgramPoints, glProgramLines, glQuad, glProgramCards, glProgramCardHover, glProgramCardsSelection, glProgramCursor, glProgramRay, glProgramGrid, glProgramText] = await Promise.all([
     basic.getProgram(),
     points.getProgram(),
     lines.getProgram(),
     quad.getProgram(),
     cards.getProgram(),
+    cardHover.getProgram(),
     cardsSelection.getProgram(),
     cursor.getProgram(),
     ray.getProgram(),
@@ -25,6 +26,10 @@ export async function setupPrograms(programs) {
   programs.push({
     name: 'cards',
     glProgram: glProgramCards
+  });
+  programs.push({
+    name: 'cardHover',
+    glProgram: glProgramCardHover
   });
   programs.push({
     name: 'cardsSelection',

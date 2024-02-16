@@ -5,7 +5,7 @@ const state = {
   speed: 0.002,
   dragAndDropLastPosition: null,
   dragAndDropDeltaOffset: null,
-  selectedCardIndex: null,
+  hoverCardIndex: null,
   CARDS_mboModels: null,
   CARDS_squares: null,
 };
@@ -37,13 +37,13 @@ export function cardsDragAndDropHandler() {
   const { cursorData } = global;
   const { CARDS_squares, speed, dragAndDropLastPosition } = state;
 
-  if(state.selectedCardIndex > 0) {
+  if(state.hoverCardIndex > 0) {
     const { x, y } = cursorData;
     const [lastX, lastY] = dragAndDropLastPosition;
     const deltaOffset = [x - lastX, y - lastY];
     state.dragAndDropLastPosition = [x, y];
     
-    const square = CARDS_squares[state.selectedCardIndex - 1];
+    const square = CARDS_squares[state.hoverCardIndex - 1];
     square.modelMatrix = mat4.translate(square.modelMatrix, square.modelMatrix, [deltaOffset[0] * speed, deltaOffset[1] * speed, 0.0]);
     cardsUpdateModels();
   }
@@ -52,13 +52,15 @@ export function cardsDragAndDropHandler() {
 function mouseDownHandler(event) {
   const { cursorData } = global;
 
-  state.selectedCardIndex = cursorData.pixels[0];
-  if (state.selectedCardIndex > 0 && event.buttons === 1 && event.button === 0 ) {
+  state.hoverCardIndex = cursorData.pixels[0];
+  if (state.hoverCardIndex > 0 && event.buttons === 1 && event.button === 0 ) {
+    global.selectedCardIndex = state.hoverCardIndex;
     state.dragAndDropLastPosition = [cursorData.x, cursorData.y];
   }
 }
 
 function mouseUpHandler() {
-  state.selectedCardIndex = null;
+  state.hoverCardIndex = null;
   state.dragAndDropDeltaEndAt = null;
+  global.selectedCardIndex = null;
 }

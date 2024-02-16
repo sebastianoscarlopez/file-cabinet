@@ -2,7 +2,10 @@ import { global } from '@/helpers/index';
 import { glMatrix, mat4 } from 'gl-matrix';
 
 export function setupCanvas(canvas) {
-  const gl = canvas.getContext('webgl2', { antialias: false, stencil: true });
+  const gl = canvas.getContext('webgl2', { antialias: false, stencil: true, alpha: false, premultipliedAlpha: false });
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  // gl.disable(gl.DEPTH_TEST);
   //   gl.enable(gl.SAMPLE_COVERAGE);
   //   gl.sampleCoverage(0.5, false);
   //   gl.getParameter(gl.SAMPLE_COVERAGE_VALUE); // 0.5
@@ -12,8 +15,9 @@ export function setupCanvas(canvas) {
   gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight);
 
   gl.enable(gl.DEPTH_TEST);
-  gl.clearColor(0.1, 0.2, 0.2, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  // console.log('clear setup');
+  gl.clearColor(0.0, 0.0, 1.0, 0.5);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   const aspect = canvas.clientWidth / canvas.clientHeight;
 

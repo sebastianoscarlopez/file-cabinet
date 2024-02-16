@@ -15,7 +15,7 @@ void main() {
   if(gl_VertexID == 1 || gl_VertexID == 3) {
     st.x = 1.0f;
   }
-  if(gl_VertexID == 2 || gl_VertexID == 3) {
+  if(gl_VertexID == 0 || gl_VertexID == 1) {
     st.y = 1.0f;
   }
 }

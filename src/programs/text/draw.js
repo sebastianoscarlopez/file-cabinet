@@ -2,41 +2,36 @@ import { mat4 } from 'gl-matrix';
 import { global, getSquareGeometry } from '@/helpers/index';
 import TinySDF from '@mapbox/tiny-sdf';
 
+const tinySdf = new TinySDF({
+  fontSize: 96,             // Font size in pixels
+  fontFamily: 'sans-serif', // CSS font-family
+  fontWeight: 'normal',     // CSS font-weight
+  fontStyle: 'normal',      // CSS font-style
+  buffer: 3,                // Whitespace buffer around a glyph in pixels
+  radius: 8,                // How many pixels around the glyph shape to use for encoding distance
+  cutoff: 0.25              // How much of the radius (relative) is used for the inside part of the glyph
+});
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+// Convert alpha-only to RGBA so we can use `putImageData` for building the composite bitmap
+function makeRGBAImageData(alphaChannel, width, height) {
+    const imageData = ctx.createImageData(width, height);
+    for (let i = 0; i < alphaChannel.length; i++) {
+        imageData.data[4 * i + 0] = alphaChannel[i];
+        imageData.data[4 * i + 1] = alphaChannel[i];
+        imageData.data[4 * i + 2] = alphaChannel[i];
+        imageData.data[4 * i + 3] = 255;
+    }
+    return imageData;
+}
 let texture;
 
 export function init() {
   const geometry = getSquareGeometry();
 
   const { gl, programs } = global;
-
-
-  const tinySdf = new TinySDF({
-    fontSize: 512,             // Font size in pixels
-    fontFamily: 'sans-serif', // CSS font-family
-    fontWeight: 'normal',     // CSS font-weight
-    fontStyle: 'normal',      // CSS font-style
-    buffer: 3,                // Whitespace buffer around a glyph in pixels
-    radius: 8,                // How many pixels around the glyph shape to use for encoding distance
-    cutoff: 0.25              // How much of the radius (relative) is used for the inside part of the glyph
-});
-
-const glyph = tinySdf.draw('泽'); // draw a single character
-console.log(glyph)
-
-const sdfData = new Uint8Array(glyph.width * glyph.height * 4);
-for (let i = 0; i < glyph.width * glyph.height; i++) {
-  sdfData[i * 4] = sdfData[i * 4 + 1] = sdfData[i * 4 + 2] = sdfData[i * 4 + 3] = glyph.data[i];  
-}
-
-  texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, glyph.width , glyph.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, sdfData);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  if(!gl.isTexture(texture)) {
-    console.log('texture failed');
-  }
-
 
   const programConfig = programs.find((program) => program.name === 'text');
 
@@ -48,7 +43,7 @@ for (let i = 0; i < glyph.width * glyph.height; i++) {
   programConfig.modelsBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, programConfig.modelsBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, 40 * 16, gl.STATIC_DRAW);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(mat4.create()));
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(mat4.fromTranslation(mat4.create(), [0.0, 0.0, 0.1])));
 
   const locModel = gl.getAttribLocation(programConfig.glProgram, "model_matrix");
   for (let i = 0; i < 4; i++) {
@@ -77,15 +72,68 @@ for (let i = 0; i < glyph.width * glyph.height; i++) {
   for (let i = 0; i < 4; i++) {
     gl.disableVertexAttribArray(locModel + i);
   }
+  console.log('init text');
 }
 
-export function draw() {
+export function draw({
+  characters,
+  x,
+  y
+}) {
   const { gl, programs } = global;
   const program = programs.find((program) => program.name === 'text');
 
   gl.useProgram(program.glProgram);
 
   gl.bindVertexArray(program.vao);
+
+
+  const glyphs = characters.split().map((char) => tinySdf.draw(char));
+  const { width, height } = glyphs.reduce((acc, glyph) => {
+    acc.width += glyph.width;
+    acc.height = Math.max(acc.height, glyph.height);
+    return acc;
+  }, { width: 0, height: 0 });
+
+
+  // const sdfData = new Uint8Array(width * height * 4);
+  
+  // let offsetX = 0;
+  // for (let i = 0; i < glyphs.length; i++) {
+  //   const glyph = glyphs[i];
+  //   for (let i = 0; i < width * height; i++) {
+  //     sdfData[i * 4 + 0 + offsetX] = glyph.data[i];
+  //     sdfData[i * 4 + 1 + offsetX] = glyph.data[i];
+  //     sdfData[i * 4 + 2 + offsetX] = glyph.data[i];
+  //     sdfData[i * 4 + 3 + offsetX] = 255;
+  //   }
+  //   // offsetX += glyph.width * glyph.height * 4;
+  //   // console.log(glyph)
+  // }
+
+    // console.log(glyphs[0], width, height);
+  // console.log(width, height, sdfData);
+
+  const maxGlyphdata = Math.max(...glyphs[0].data);
+  const alphaData = makeRGBAImageData(glyphs[0].data, width, height);
+  ctx.putImageData(alphaData, 0, 0);
+
+  const sdfData = new Uint8Array(ctx.getImageData(0, 0, width, height).data);
+  const maxValue = Math.max(...sdfData.map(({ data }) => data));
+  // console.log(maxGlyphdata, width, height);
+
+
+  texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, sdfData);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  if (!gl.isTexture(texture)) {
+    console.log('texture failed');
+  }
+
 
   const u_textureLocation = gl.getUniformLocation(program.glProgram, "u_texture");
   gl.uniform1i(u_textureLocation, 0);

@@ -1,5 +1,6 @@
 export * as basic from './basic';
 export * as cards from './cards';
+export * as cardHover from './card-hover';
 export * as cardsSelection from './cards-selection';
 export * as points from './points';
 export * as lines from './lines';

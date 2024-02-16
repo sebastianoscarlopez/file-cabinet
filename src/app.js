@@ -3,7 +3,7 @@ import { mat4 } from 'gl-matrix';
 import { global } from '@/helpers/index';
 
 import {
-  quad, points, cards, cardsSelection, basic, cursor, text,
+  quad, points, cards, cardHover, cardsSelection, basic, cursor, text,
 } from './programs/index';
 import { DataStorage } from '@/data-storage';
 import { setupPrograms } from '@/programs/setup';
@@ -76,8 +76,8 @@ const startApp = async () => {
 
   POINTS_CAPTURE();
   
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, clientWidth, clientHeight );
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  // gl.viewport(0, 0, clientWidth, clientHeight );
 
 
   renderLoop();
@@ -101,6 +101,10 @@ function CARDS_SETUP({
   cardsSelection.init({
     modelsBuffer
   });
+
+  cardHover.init({
+    modelsBuffer
+  });
 }
 
 function renderLoop() {
@@ -109,11 +113,16 @@ function renderLoop() {
     return;
   }
   const { gl, clientWidth, clientHeight, cursorData, selectionFrameBuffer } = global;
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  
 
-  gl.depthFunc(gl.ALWAYS)
+  // gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  // gl.enable(gl.BLEND);
+  // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+
   // gl.lineWidth(50.0);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  // gl.depthFunc(gl.LESS);
   // gl.disable(gl.STENCIL_TEST);
 
   // ray.draw();
@@ -129,12 +138,18 @@ function renderLoop() {
 
   // gl.bindFramebuffer(gl.FRAMEBUFFER, cardsFrameBuffers);
   // gl.viewport(0, 0, cardsTextureSize, cardsTextureSize);
+
   for (let i = 0; i < CARDS_squares.length; i++) {
     points.draw(i);
   }
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, selectionFrameBuffer);
+  
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight);
+  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  gl.depthFunc(gl.LESS);
+  gl.disable(gl.BLEND);
+
   cardsSelection.draw({
     totalCards: CARDS_squares.length
   });
@@ -145,15 +160,36 @@ function renderLoop() {
   global.cursorData.pixels = pixels;
   cardsDragAndDropHandler();
   
-
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight);
+  gl.clearColor(0.0, 0.0, 0.0, 0.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  gl.depthFunc(gl.LESS);
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  
+  // text.draw({
+  //   // characters: '学',
+  //   characters: 'i',
+  // });
 
-  text.draw();
+  gl.enable(gl.STENCIL_TEST);
+  gl.stencilMask(0xFF);
+  gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
+  gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
   cards.draw({
     totalCards: CARDS_squares.length
   });
   
+  gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
+  cardHover.draw({
+    totalCards: CARDS_squares.length
+  });
+
+  gl.disable(gl.STENCIL_TEST);
+  gl.depthFunc(gl.ALWAYS);
+  cursor.draw();
+
   // gl.depthFunc(gl.ALWAYS)
 
   // gl.stencilFunc(gl.EQUAL, 1, 0xFF);
@@ -162,7 +198,6 @@ function renderLoop() {
   // gl.disable(gl.STENCIL_TEST);
   // gl.depthFunc(gl.LESS)
 
-  cursor.draw();
 
 
   // const { programs } = global;

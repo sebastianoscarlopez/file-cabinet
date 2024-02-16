@@ -14,7 +14,8 @@ export function createCardsFrameBuffers() {
   gl.bindFramebuffer(gl.FRAMEBUFFER, cardsFrameBuffers[0]);
   gl.viewport(0, 0, cardsTextureSize, cardsTextureSize);
 
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+  console.log('clear createCardsFrameBuffers');
+  // gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
   gl.clear(gl.COLOR_BUFFER_BIT);
 

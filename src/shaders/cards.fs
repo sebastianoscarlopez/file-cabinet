@@ -9,10 +9,10 @@ uniform mediump sampler2DArray u_texture0;
 out vec4 FragColor;
 
 void main() {
-  vec4 texColorBase = texture(u_texture0, vec3(st, 0));
+  vec4 texColorBase = texture(u_texture0, vec3(st, 0.0));
   vec4 texColorPlot = texture(u_texture0, vec3(st, cardsIndex + 1));
 
-  vec4 color = texColorPlot.a > 0.0f ? texColorPlot : texColorBase;
+  vec4 color = texColorPlot.a > 0.0 ? texColorPlot : texColorBase;
 
-  FragColor = color;
+  FragColor = vec4(color.rgb - 0.0, 1.0);
 }

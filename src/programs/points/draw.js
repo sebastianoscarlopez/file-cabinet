@@ -20,6 +20,7 @@ export function draw(index) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, cardsFrameBuffers[index + 1]);
   gl.viewport(0, 0, cardsTextureSize, cardsTextureSize);
 
+  // console.log('clear points');
   gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -35,5 +36,4 @@ export function draw(index) {
     totalPoints
   );
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 };
