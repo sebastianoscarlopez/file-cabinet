@@ -52,8 +52,7 @@ export function init({
 }
 
 export function draw() {
-  const { gl, selectedCardIndex, cursorData } = global;
-  const hoverCardIndex = cursorData.pixels[0];
+  const { gl, cardsData: { hoverCardIndex, selectedCardIndex } } = global;
 
   if(!selectedCardIndex && !hoverCardIndex) {
     return;

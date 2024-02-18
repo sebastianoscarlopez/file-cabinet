@@ -27,12 +27,13 @@ export function draw(index) {
   // gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, dataStorage.memoryBuffer[index]);
+  const { buffer, bufferOffset } = dataStorage.memory.get(`points_${index}`);
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   const coordinatesLayout = 0;
   gl.vertexAttribPointer(coordinatesLayout, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(coordinatesLayout);
 
-  const totalLines = dataStorage.memoryBufferOffset[index] / 4 / 2; // 2 floats per point
+  const totalLines = bufferOffset / 4 / 2; // 2 floats per point
   gl.drawArrays(
     gl.POINTS,
     0,

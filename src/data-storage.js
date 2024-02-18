@@ -1,36 +1,53 @@
 import { global } from '@/helpers/index';
 
 export class DataStorage {
+
   constructor() {
-    this.memoryBuffer = [];
-    this.memoryBufferOffset = [];
+    this.memory = new Map();
   }
 
-  init() {
-    const { gl, CARDS_MAX, dataStorageMaxMemory } = global;
+  addMemory(key) {
+    const { gl, dataStorageMaxMemory } = global;
 
-    for (let i = 0; i < CARDS_MAX; i++) {
-      this.memoryBufferOffset[i] = 0;
-      this.memoryBuffer[i] = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer[i]);
-      gl.bufferData(gl.ARRAY_BUFFER, dataStorageMaxMemory, gl.DYNAMIC_DRAW);
-    }
+    const buffer = gl.createBuffer();
+    const bufferOffset = 0;
+    this.memory.set(key, {
+      bufferOffset,
+      buffer
+    });
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, dataStorageMaxMemory, gl.DYNAMIC_DRAW);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
-  addData(index, data) {
+  addData(key, data) {
     const { gl } = global;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer[index]);
-    gl.bufferSubData(gl.ARRAY_BUFFER, this.memoryBufferOffset[index], data);
+    const currentMemory = this.memory.get(key);
+    gl.bindBuffer(gl.ARRAY_BUFFER, currentMemory.buffer);
+    gl.bufferSubData(gl.ARRAY_BUFFER, currentMemory.bufferOffset, data);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    this.memoryBufferOffset[index] += data.byteLength;
+    currentMemory.bufferOffset += data.byteLength;
   }
 
-  replaceData(index, data) {
+  replaceData(key, data) {
     const { gl } = global;
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.memoryBuffer[index]);
+    const currentMemory = this.memory.get(key);
+    gl.bindBuffer(gl.ARRAY_BUFFER, currentMemory.buffer);
     gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    this.memoryBufferOffset[index] = data.byteLength;
+    currentMemory.bufferOffset = data.byteLength;
+  }
+
+  getData(key) {
+    const { buffer, bufferOffset } = this.memory.get(key);
+    if(!bufferOffset) {
+      return new Float32Array(0);
+    }
+    const { gl } = global;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    const data = new Float32Array(bufferOffset);
+    gl.getBufferSubData(gl.ARRAY_BUFFER, 0, data);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    return data;
   }
 }

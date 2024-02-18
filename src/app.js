@@ -5,7 +5,6 @@ import { global } from '@/helpers/index';
 import {
   quad, points, cards, cardHover, cardsSelection, basic, cursor, text,
 } from './programs/index';
-import { DataStorage } from '@/data-storage';
 import { setupPrograms } from '@/programs/setup';
 import { POINTS_CAPTURE } from '../tests/mock-points-capture';
 import { createCardsFrameBuffers } from './cards-base-framebuffers';
@@ -25,6 +24,19 @@ const CARDS_squares = [
     modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.5, 0.0, -1.5])
   },
 ];
+
+for (let i = 0; i < CARDS_squares.length; i++) {
+  global.cardsData.plotConfig.push({
+    scale: {
+      x: 5.5,
+      y: 1
+    },
+    offset: {
+      x: -1.0,
+      y: 0.0
+    }
+  });
+}
 
 const startApp = async () => {
   const { gl, canvas, programs, clientWidth, clientHeight } = global;
@@ -84,9 +96,6 @@ const startApp = async () => {
 }
 
 function POINTS_SETUP() {
-  global.dataStorage = new DataStorage();
-  global.dataStorage.init();
-
   points.init();
 }
 

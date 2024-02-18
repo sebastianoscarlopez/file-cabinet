@@ -1,23 +1,14 @@
 import { global } from '@/helpers/index';
 import { sinData } from './sin-data';
 
-const POINTS_DATA_SETTINGS = {
-  scale: {
-    x: 1,
-    y: 1
-  },
-  offset: {
-    x: -1.0,
-    y: 0.0
+function POINT_DATA_ADJUST(index, points) {
+  const { scale, offset } = global.cardsData.plotConfig[index];
+  const pointsAdjusted = new Float32Array(points.length);
+  for(let i = 0; i < points.length - 1; i += 2) {
+    pointsAdjusted[i] = points[i] * scale.x + offset.x,
+    pointsAdjusted[i + 1] = points[i + 1] * scale.y + offset.y
   }
-}
-
-function POINT_DATA_ADJUST(points) {
-  const { scale, offset } = POINTS_DATA_SETTINGS;
-  return points.map(point => ([
-    point[0] * scale.x + offset.x,
-    point[1] * scale.y + offset.y
-  ]));
+  return pointsAdjusted;
 }
 
 export function POINTS_CAPTURE() {
@@ -31,36 +22,40 @@ export function POINTS_CAPTURE() {
     xEnd: 2
   });
 
-  const pointsData = [];
-  // const MOCK_pointsData = [0, 0, -1, -1, -1, 1, 1, 1, 1, -1];
+  global.dataStorage.addMemory(`points_original_0`);
+  global.dataStorage.addMemory(`points_original_1`);
+  global.dataStorage.addMemory(`points_0`);
+  global.dataStorage.addMemory(`points_1`);
 
   document.addEventListener('point-added', (e) => {
-    global.dataStorage.addData(0, new Float32Array(e.detail));
-    global.dataStorage.addData(1, new Float32Array(e.detail));
+    const { index, point } = e.detail;
+    global.dataStorage.addData(`points_original_${index}`, new Float32Array(point));
+    document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
   });
 
   document.addEventListener('point-adjust', (e) => {
-    global.dataStorage.replaceData(0, new Float32Array(POINT_DATA_ADJUST(pointsData).flat()));
-    const detailWithRandomNoise = pointsData.map((point) => {
-      return [point[0] + (Math.random() - 0.5) * 0.01, point[1] + (Math.random() - 0.5) * 0.2];
-    });
-    global.dataStorage.replaceData(1, new Float32Array(POINT_DATA_ADJUST(detailWithRandomNoise).flat()));
+    if(!e.detail) return;
+    const index = e.detail.index;
+    let auxPoints = global.dataStorage.getData(`points_original_${index}`);
+    global.dataStorage.replaceData(`points_${index}`, new Float32Array(POINT_DATA_ADJUST(index, auxPoints)));
   });
 
   let idx = 0;
   const refInterval = setInterval(() => {
-    const newPoint = MOCK_pointsData.slice(idx, idx + 2);
-    pointsData.push(newPoint);
-    const adjustedPoint = POINT_DATA_ADJUST([newPoint])[0];
-    document.dispatchEvent(new CustomEvent('point-added', { detail: adjustedPoint }));
+    const point = MOCK_pointsData.slice(idx, idx + 2);
+    document.dispatchEvent(new CustomEvent('point-added', { detail: { index: 0, point } }));
+
+    const pointWithNoise = [point[0] + (Math.random() - 0.5) * 0.01, point[1] + (Math.random() - 0.5) * 0.2];
+    document.dispatchEvent(new CustomEvent('point-added', { detail: { index: 1, point: pointWithNoise } }));
+
     idx += 2;
     if (idx >= MOCK_totalPoints * 2) {
       clearInterval(refInterval);
     }
-  }, 5);
+  }, 10);
 
-  setInterval(() => {
-    // POINTS_DATA_SETTINGS.offset.x -= 0.03;
-    document.dispatchEvent(new CustomEvent('point-adjust'));
-  }, 200);
+  setTimeout(() => {
+    document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index: 0 } }));
+    document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index: 1 } }));
+  }, 1000);
 }
