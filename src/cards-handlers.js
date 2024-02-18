@@ -1,6 +1,32 @@
 import { global } from '@/helpers/index';
 import { mat4, vec4 } from 'gl-matrix';
 
+const EVENTS_SETTINGS = [
+  {
+    name: 'mousedown',
+    handler: mouseDownHandler
+  }, {
+    name: 'mouseup',
+    handler: mouseUpHandler
+  },
+  {
+    name: 'move-up',
+    handler: increaseScaleVerticalHandler.bind(null, 0.1)
+  },
+  {
+    name: 'move-down',
+    handler: increaseScaleVerticalHandler.bind(null, -0.1)
+  },
+  {
+    name: 'move-left',
+    handler: increaseScaleHorizontalHandler.bind(null, -0.1)
+  },
+  {
+    name: 'move-right',
+    handler: increaseScaleHorizontalHandler.bind(null, 0.1)
+  }
+];
+
 const state = {
   speed: 0.002,
   dragAndDropLastPosition: null,
@@ -11,13 +37,14 @@ const state = {
 
 export function cardsHandlerInit(CARDS_mboModels, CARDS_squares) {
   const { canvas } = global;
-  
+
   state.CARDS_mboModels = CARDS_mboModels;
   state.CARDS_squares = CARDS_squares;
   cardsUpdateModels();
 
-  canvas.addEventListener('mousedown', mouseDownHandler);
-  canvas.addEventListener('mouseup', mouseUpHandler);
+  EVENTS_SETTINGS.forEach(({ name, handler }) => {
+    canvas.addEventListener(name, handler);
+  });
 }
 
 export function cardsUpdateModels() {
@@ -37,12 +64,12 @@ export function cardsDragAndDropHandler() {
   const { CARDS_squares, speed, dragAndDropLastPosition } = state;
 
   cardsData.hoverCardIndex = cursorData.pixels[0];
-  if(cardsData.selectedCardIndex > 0) {
+  if (state.dragAndDropLastPosition !== null && cardsData.selectedCardIndex > 0) {
     const { x, y } = cursorData;
     const [lastX, lastY] = dragAndDropLastPosition;
     const deltaOffset = [x - lastX, y - lastY];
     state.dragAndDropLastPosition = [x, y];
-    
+
     const square = CARDS_squares[cardsData.selectedCardIndex - 1];
     square.modelMatrix = mat4.translate(square.modelMatrix, square.modelMatrix, [deltaOffset[0] * speed, deltaOffset[1] * speed, 0.0]);
     cardsUpdateModels();
@@ -52,13 +79,30 @@ export function cardsDragAndDropHandler() {
 function mouseDownHandler(event) {
   const { cursorData, cardsData } = global;
 
-  if (cardsData.hoverCardIndex > 0 && event.buttons === 1 && event.button === 0 ) {
+  if (event.buttons === 1 && event.button === 0) {
     cardsData.selectedCardIndex = cardsData.hoverCardIndex;
-    state.dragAndDropLastPosition = [cursorData.x, cursorData.y];
+    if (cardsData.hoverCardIndex > 0) {
+      state.dragAndDropLastPosition = [cursorData.x, cursorData.y];
+    }
   }
 }
 
 function mouseUpHandler() {
-  state.dragAndDropDeltaEndAt = null;
-  global.cardsData.selectedCardIndex = null;
+  state.dragAndDropLastPosition = null;
+}
+
+function increaseScaleHorizontalHandler(delta = 0.1) {
+  const { cardsData: { selectedCardIndex, plotConfig } } = global;
+  if (!selectedCardIndex) return;
+  const index = selectedCardIndex - 1;
+  plotConfig[index].scale.x += delta;
+  document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
+}
+
+function increaseScaleVerticalHandler(delta = 0.1) {
+  const { cardsData: { selectedCardIndex, plotConfig } } = global;
+  if (!selectedCardIndex) return;
+  const index = selectedCardIndex - 1;
+  plotConfig[index].scale.y += delta;
+  document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
 }

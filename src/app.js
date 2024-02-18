@@ -10,6 +10,7 @@ import { POINTS_CAPTURE } from '../tests/mock-points-capture';
 import { createCardsFrameBuffers } from './cards-base-framebuffers';
 import { cardsHandlerInit, cardsDragAndDropHandler } from './cards-handlers';
 import { mouseMoveHandler } from './mouse-handlers';
+import { keydownHandler } from './keyboard-handlers';
 import { createSelectionFrameBuffer } from './selection-framebuffer';
 
 
@@ -28,7 +29,7 @@ const CARDS_squares = [
 for (let i = 0; i < CARDS_squares.length; i++) {
   global.cardsData.plotConfig.push({
     scale: {
-      x: 5.5,
+      x: 1,
       y: 1
     },
     offset: {
@@ -69,6 +70,8 @@ const startApp = async () => {
   });
 
   canvas.addEventListener('mousemove', mouseMoveHandler.bind(null, CURSOR_boCoords));
+  window.addEventListener('keydown', keydownHandler);
+
   cardsHandlerInit(CARDS_mboModels, CARDS_squares);
 
   // RAY_boCoords = gl.createBuffer();
