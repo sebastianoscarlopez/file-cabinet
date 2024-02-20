@@ -17,7 +17,7 @@ void main() {
   vec4 color = texture(u_texture, st);
   float distance = color.r;
   float alpha = smoothstep(buffer - smoothing, buffer + smoothing, distance);
-  if(alpha < 0.1)
-    discard;
   FragColor = vec4(textColor.rgb, alpha * textColor.a);
+  // if(alpha < 0.1)
+  //   FragColor = vec4(1.0, 1.0, 1.0, 0.5);
 }

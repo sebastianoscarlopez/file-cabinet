@@ -1,4 +1,4 @@
-import { mat4 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 import { global, getSquareGeometry } from '@/helpers/index';
 import TinySDF from '@mapbox/tiny-sdf';
 
@@ -42,8 +42,8 @@ export function init() {
 
   programConfig.modelsBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, programConfig.modelsBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, 40 * 16, gl.STATIC_DRAW);
-  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(mat4.fromTranslation(mat4.create(), [0.0, 0.0, 0.1])));
+  gl.bufferData(gl.ARRAY_BUFFER, 4 * 16, gl.STATIC_DRAW);
+  gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(mat4.fromTranslation(mat4.create(), [0.0, 0.0, 0.0])));
 
   const locModel = gl.getAttribLocation(programConfig.glProgram, "model_matrix");
   for (let i = 0; i < 4; i++) {
@@ -80,7 +80,7 @@ export function draw({
   x,
   y
 }) {
-  const { gl, programs } = global;
+  const { gl, programs, clientWidth, clientHeight} = global;
   const program = programs.find((program) => program.name === 'text');
 
   gl.useProgram(program.glProgram);
@@ -88,14 +88,8 @@ export function draw({
   gl.bindVertexArray(program.vao);
 
 
-  const glyphs = characters.split().map((char) => tinySdf.draw(char));
-  const { width, height } = glyphs.reduce((acc, glyph) => {
-    acc.width += glyph.width;
-    acc.height = Math.max(acc.height, glyph.height);
-    return acc;
-  }, { width: 0, height: 0 });
-
-
+  const glyphs = characters.split('').map((char) => tinySdf.draw(char));
+// console.log(glyphs)
   // const sdfData = new Uint8Array(width * height * 4);
   
   // let offsetX = 0;
@@ -114,39 +108,51 @@ export function draw({
     // console.log(glyphs[0], width, height);
   // console.log(width, height, sdfData);
 
-  const maxGlyphdata = Math.max(...glyphs[0].data);
-  const alphaData = makeRGBAImageData(glyphs[0].data, width, height);
-  ctx.putImageData(alphaData, 0, 0);
+  // const maxGlyphdata = Math.max(...glyphs[0].data);
+  let glyphAdvanceTotal = 0.0;
+  for(let i = 0; i < glyphs.length; i++) {
+    const glyph = glyphs[i];
+    const width = glyph.width;
+    const height = glyph.height;
+    const alphaData = makeRGBAImageData(glyph.data, width, height);
+    ctx.putImageData(alphaData, 0, 0);
+    const sdfData = new Uint8Array(ctx.getImageData(0, 0, width, height).data);
 
-  const sdfData = new Uint8Array(ctx.getImageData(0, 0, width, height).data);
-  const maxValue = Math.max(...sdfData.map(({ data }) => data));
-  // console.log(maxGlyphdata, width, height);
+    texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, sdfData);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (!gl.isTexture(texture)) {
+      console.log('texture failed');
+    }
 
+    const u_textureLocation = gl.getUniformLocation(program.glProgram, "u_texture");
+    gl.uniform1i(u_textureLocation, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  texture = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, sdfData);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  if (!gl.isTexture(texture)) {
-    console.log('texture failed');
+    gl.bindBuffer(gl.ARRAY_BUFFER, program.modelsBuffer);
+    // console.log({ width, height })
+    let model = mat4.create();
+    glyphAdvanceTotal += glyph.glyphLeft;
+    const posX = (glyph.glyphWidth / 2 + glyphAdvanceTotal) / clientWidth + x;
+    const posY = (glyph.glyphTop - glyph.glyphHeight / 2) / clientHeight + y;
+    model = mat4.fromTranslation(mat4.create(), [posX, posY, 0.0, 0.0])
+    model = mat4.scale(model, model, vec3.fromValues(glyph.glyphWidth / clientWidth, glyph.glyphHeight / clientHeight, 1.0));
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array(model));
+
+    glyphAdvanceTotal += glyph.glyphAdvance;
+
+    gl.drawElementsInstanced(
+      gl.TRIANGLE_STRIP,
+      4,
+      gl.UNSIGNED_SHORT,
+      0,
+      1
+    );
   }
-
-
-  const u_textureLocation = gl.getUniformLocation(program.glProgram, "u_texture");
-  gl.uniform1i(u_textureLocation, 0);
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-
-
-  gl.drawElementsInstanced(
-    gl.TRIANGLE_STRIP,
-    4,
-    gl.UNSIGNED_SHORT,
-    0,
-    1
-  );
   gl.bindVertexArray(null);
 }

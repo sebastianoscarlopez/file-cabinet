@@ -22,7 +22,7 @@ const CARDS_squares = [
     modelMatrix: modelA
   },
   {
-    modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.5, 0.0, -1.5])
+    modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -0.0])
   },
 ];
 
@@ -155,7 +155,7 @@ function renderLoop() {
     points.draw(i);
   }
   
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, selectionFrameBuffer);
   gl.viewport(0, 0, clientWidth, clientHeight);
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
@@ -179,11 +179,6 @@ function renderLoop() {
   gl.depthFunc(gl.LESS);
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  
-  // text.draw({
-  //   // characters: '学',
-  //   characters: 'i',
-  // });
 
   gl.enable(gl.STENCIL_TEST);
   gl.stencilMask(0xFF);
@@ -201,6 +196,14 @@ function renderLoop() {
   gl.disable(gl.STENCIL_TEST);
   gl.depthFunc(gl.ALWAYS);
   cursor.draw();
+
+
+  text.draw({
+    characters: 'Hello World!',
+    // characters: 'lol',
+    x: -1.0,
+    y: -1.0
+  });
 
   // gl.depthFunc(gl.ALWAYS)
 

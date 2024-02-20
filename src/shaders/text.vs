@@ -11,7 +11,7 @@ uniform Settings {
 };
 
 void main() {
-  gl_Position = u_projection_matrix * u_view_matrix * model_matrix * vec4(coordinates, 1.0f);
+  gl_Position = model_matrix * vec4(coordinates, 1.0f);
   if(gl_VertexID == 1 || gl_VertexID == 3) {
     st.x = 1.0f;
   }
