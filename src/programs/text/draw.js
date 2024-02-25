@@ -3,13 +3,13 @@ import { global, getSquareGeometry } from '@/helpers/index';
 import TinySDF from '@mapbox/tiny-sdf';
 
 const tinySdf = new TinySDF({
-  fontSize: 96,             // Font size in pixels
+  fontSize: 48,             // Font size in pixels
   fontFamily: 'sans-serif', // CSS font-family
   fontWeight: 'normal',     // CSS font-weight
   fontStyle: 'normal',      // CSS font-style
-  buffer: 3,                // Whitespace buffer around a glyph in pixels
-  radius: 8,                // How many pixels around the glyph shape to use for encoding distance
-  cutoff: 0.25              // How much of the radius (relative) is used for the inside part of the glyph
+  buffer: 2,                // Whitespace buffer around a glyph in pixels
+  radius: 3,                // How many pixels around the glyph shape to use for encoding distance
+  cutoff: 0.1              // How much of the radius (relative) is used for the inside part of the glyph
 });
 
 const canvas = document.getElementById('canvas');

@@ -11,20 +11,20 @@ const EVENTS_SETTINGS = [
   },
   {
     name: 'move-up',
-    handler: increaseScaleVerticalHandler.bind(null, 0.1)
+    handler: verticalHandler.bind(null, 0.1)
   },
   {
     name: 'move-down',
-    handler: increaseScaleVerticalHandler.bind(null, -0.1)
+    handler: verticalHandler.bind(null, -0.1)
   },
   {
     name: 'move-left',
-    handler: increaseScaleHorizontalHandler.bind(null, -0.1)
+    handler: horizontalHandler.bind(null, -0.1)
   },
   {
     name: 'move-right',
-    handler: increaseScaleHorizontalHandler.bind(null, 0.1)
-  }
+    handler: horizontalHandler.bind(null, 0.1)
+  },
 ];
 
 const state = {
@@ -43,7 +43,7 @@ export function cardsHandlerInit(CARDS_mboModels, CARDS_squares) {
   cardsUpdateModels();
 
   EVENTS_SETTINGS.forEach(({ name, handler }) => {
-    canvas.addEventListener(name, handler);
+    canvas.addEventListener(name, handler.bind(null));
   });
 }
 
@@ -91,18 +91,46 @@ function mouseUpHandler() {
   state.dragAndDropLastPosition = null;
 }
 
-function increaseScaleHorizontalHandler(delta = 0.1) {
+function horizontalHandler(delta = 0.1, { detail: { shiftKey } }) {
   const { cardsData: { selectedCardIndex, plotConfig } } = global;
   if (!selectedCardIndex) return;
   const index = selectedCardIndex - 1;
-  plotConfig[index].scale.x += delta;
+
+  const adjustFunction = shiftKey
+    ? adjustOffsetHorizontal
+    : adjustScaleHorizontal
+
+    adjustFunction(index, plotConfig[index], delta)
+}
+
+function adjustScaleHorizontal(index, plotConfig, delta) {
+  plotConfig.scale.x += delta;
   document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
 }
 
-function increaseScaleVerticalHandler(delta = 0.1) {
+function adjustOffsetHorizontal(index, plotConfig, delta) {
+  plotConfig.offset.x += delta;
+  document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
+}
+
+function verticalHandler(delta = 0.1, { detail: { shiftKey } }) {
   const { cardsData: { selectedCardIndex, plotConfig } } = global;
   if (!selectedCardIndex) return;
   const index = selectedCardIndex - 1;
-  plotConfig[index].scale.y += delta;
+
+  const adjustFunction = shiftKey
+    ? adjustOffsetVertical
+    : adjustScaleVertical
+
+    adjustFunction(index, plotConfig[index], delta)
+}
+
+function adjustScaleVertical(index, plotConfig, delta) {
+  plotConfig.scale.y += delta;
+  document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
+}
+
+function adjustOffsetVertical(index, plotConfig, delta) {
+  plotConfig.offset.y += delta;
   document.dispatchEvent(new CustomEvent('point-adjust', { detail: { index } }));
 }

@@ -22,7 +22,7 @@ const CARDS_squares = [
     modelMatrix: modelA
   },
   {
-    modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -0.0])
+    modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -0.5])
   },
 ];
 
@@ -197,14 +197,7 @@ function renderLoop() {
   gl.depthFunc(gl.ALWAYS);
   cursor.draw();
 
-
-  text.draw({
-    characters: 'Hello World!',
-    // characters: 'lol',
-    x: -1.0,
-    y: -1.0
-  });
-
+  drawCardData();
   // gl.depthFunc(gl.ALWAYS)
 
   // gl.stencilFunc(gl.EQUAL, 1, 0xFF);
@@ -231,6 +224,24 @@ function renderLoop() {
   // quad.draw();
 
   requestAnimationFrame(renderLoop);
+}
+
+function drawCardData() {
+  const { cardsData: { selectedCardIndex, hoverCardIndex, plotConfig } } = global;
+  const index = selectedCardIndex || hoverCardIndex;
+
+  if(!index) {
+    return;
+  }
+
+  const { offset, scale } = plotConfig[index - 1];
+
+  text.draw({
+    characters: `Card Index: ${index} | Offset: ${offset.x.toFixed(2)}, ${offset.y.toFixed(2)} | Scale: ${scale.x.toFixed(2)}, ${scale.y.toFixed(2)}`,
+    // characters: 'lol',
+    x: -0.95,
+    y: -0.95
+  });
 }
 
 export default startApp;

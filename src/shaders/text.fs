@@ -10,7 +10,7 @@ out vec4 FragColor;
 
 float smoothing = 1.0;
 float buffer = 0.75;
-vec4 textColor = vec4(1.0, 0.0, 0.0, 1.0);
+vec4 textColor = vec4(1.0, 1.0, 0.0, 1.0);
 
 void main() {
 

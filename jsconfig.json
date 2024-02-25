@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "paths": {
-      "@helpers": ["./src/helpers/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
