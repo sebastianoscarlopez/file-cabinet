@@ -39,7 +39,7 @@ export function init({
   const indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, squareGeometry.indices, gl.STATIC_DRAW);
-  
+
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
   gl.bindVertexArray(null);
@@ -50,15 +50,17 @@ export function init({
   }
 }
 
-export function draw({totalCards}) {
-  const { gl, cardsTexture } = global;
+export function draw() {
+  const { gl, cardsTexture, cardsData } = global;
 
+  const totalCards = cardsData.plotConfig.length;
+  if(totalCards === 0) return;
+  
   const glProgram = global.programs.find((program) => program.name === 'cards').glProgram;
   gl.useProgram(glProgram);
 
   var u_color = gl.getUniformLocation(glProgram, "u_color");
   gl.uniform3fv(u_color, [0, 0, 1]);
-
 
   const u_textureLocation = gl.getUniformLocation(glProgram, "u_texture");
   gl.uniform1i(u_textureLocation, 0);
@@ -71,7 +73,7 @@ export function draw({totalCards}) {
     4,
     gl.UNSIGNED_SHORT,
     0,
-    2
+    totalCards
   );
   gl.bindVertexArray(null);
 }

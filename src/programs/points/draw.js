@@ -13,6 +13,8 @@ export function init() {
 export function draw(index) {
   const { gl, cardsFrameBuffers, cardsTextureSize, dataStorage } = global;
 
+  const memory = dataStorage.memory.get(`points_${index}`);
+  if(!memory) return;
 
   const {glProgram} = global.programs.find((program) => program.name === 'points');
   gl.useProgram(glProgram);
@@ -24,7 +26,7 @@ export function draw(index) {
   gl.clearColor(0.0, 0.0, 0.0, 0.0); // Set clear color (the color is slightly changed)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  const { buffer, bufferOffset } = dataStorage.memory.get(`points_${index}`);
+  const { buffer, bufferOffset } = memory;
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   const coordinatesLayout = 0;
   gl.vertexAttribPointer(coordinatesLayout, 2, gl.FLOAT, false, 0, 0);

@@ -50,9 +50,12 @@ export function init({
   }
 }
 
-export function draw({totalCards}) {
-  const { gl, cardsTexture } = global;
+export function draw() {
+  const { gl, cardsTexture, cardsData } = global;
 
+  const totalCards = cardsData.plotConfig.length;
+  if(totalCards === 0) return;
+  
   const glProgram = global.programs.find((program) => program.name === 'cardsSelection').glProgram;
   gl.useProgram(glProgram);
 

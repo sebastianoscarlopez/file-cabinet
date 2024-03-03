@@ -14,37 +14,31 @@ import { keydownHandler } from './keyboard-handlers';
 import { createSelectionFrameBuffer } from './selection-framebuffer';
 
 
-let modelA = mat4.fromYRotation(mat4.create(), 0.5);
-modelA = mat4.translate(modelA, modelA, [-0.5, -0.0, -1.5]);
+// const CARDS_squares = [
+//   {
+//     modelMatrix: mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -0.5])
+//   },
+// ];
 
-const CARDS_squares = [
-  {
-    modelMatrix: modelA
-  },
-  {
-    modelMatrix:mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -0.5])
-  },
-];
-
-for (let i = 0; i < CARDS_squares.length; i++) {
-  global.cardsData.plotConfig.push({
-    scale: {
-      x: 1,
-      y: 1
-    },
-    offset: {
-      x: -1.0,
-      y: 0.0
-    }
-  });
-}
+// for (let i = 0; i < CARDS_squares.length; i++) {
+//   global.cardsData.plotConfig.push({
+//     scale: {
+//       x: 1,
+//       y: 1
+//     },
+//     offset: {
+//       x: -1.0,
+//       y: 0.0
+//     }
+//   });
+// }
 
 const startApp = async () => {
   const { gl, canvas, programs, clientWidth, clientHeight } = global;
 
   await setupPrograms(programs);
   basic.init();
-  
+
   createCardsFrameBuffers();
   createSelectionFrameBuffer();
 
@@ -72,8 +66,17 @@ const startApp = async () => {
   canvas.addEventListener('mousemove', mouseMoveHandler.bind(null, CURSOR_boCoords));
   window.addEventListener('keydown', keydownHandler);
 
-  cardsHandlerInit(CARDS_mboModels, CARDS_squares);
+  cardsHandlerInit(CARDS_mboModels);
 
+  setTimeout(() => {
+    canvas.dispatchEvent(new CustomEvent('card-new'));
+  }, 500);
+  setTimeout(() => {
+    canvas.dispatchEvent(new CustomEvent('card-new'));
+  }, 1000);
+  setTimeout(() => {
+    canvas.dispatchEvent(new CustomEvent('card-new'));
+  }, 1500);
   // RAY_boCoords = gl.createBuffer();
   // gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
   // gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * 2, gl.DYNAMIC_DRAW);
@@ -90,7 +93,7 @@ const startApp = async () => {
   text.init();
 
   POINTS_CAPTURE();
-  
+
   // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   // gl.viewport(0, 0, clientWidth, clientHeight );
 
@@ -120,12 +123,12 @@ function CARDS_SETUP({
 }
 
 function renderLoop() {
-  if(!global.initiated) {
+  if (!global.initiated) {
     requestAnimationFrame(renderLoop);
     return;
   }
-  const { gl, clientWidth, clientHeight, cursorData, selectionFrameBuffer } = global;
-  
+  const { gl, clientWidth, clientHeight, cursorData, selectionFrameBuffer, cardsData } = global;
+
 
   // gl.clearColor(0.0, 0.0, 0.0, 1.0);
   // gl.enable(gl.BLEND);
@@ -151,10 +154,10 @@ function renderLoop() {
   // gl.bindFramebuffer(gl.FRAMEBUFFER, cardsFrameBuffers);
   // gl.viewport(0, 0, cardsTextureSize, cardsTextureSize);
 
-  for (let i = 0; i < CARDS_squares.length; i++) {
+  for (let i = 0; i < cardsData.plotConfig.length; i++) {
     points.draw(i);
   }
-  
+
   gl.bindFramebuffer(gl.FRAMEBUFFER, selectionFrameBuffer);
   gl.viewport(0, 0, clientWidth, clientHeight);
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -162,16 +165,14 @@ function renderLoop() {
   gl.depthFunc(gl.LESS);
   gl.disable(gl.BLEND);
 
-  cardsSelection.draw({
-    totalCards: CARDS_squares.length
-  });
+  cardsSelection.draw();
 
   let pixels = new Uint8Array(4);
   gl.readPixels(cursorData.x, cursorData.y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-  
+
   global.cursorData.pixels = pixels;
   cardsDragAndDropHandler();
-  
+
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.viewport(0, 0, clientWidth, clientHeight);
   gl.clearColor(0.0, 0.0, 0.0, 0.0);
@@ -184,14 +185,10 @@ function renderLoop() {
   gl.stencilMask(0xFF);
   gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
   gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-  cards.draw({
-    totalCards: CARDS_squares.length
-  });
-  
+  cards.draw();
+
   gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
-  cardHover.draw({
-    totalCards: CARDS_squares.length
-  });
+  cardHover.draw();
 
   gl.disable(gl.STENCIL_TEST);
   gl.depthFunc(gl.ALWAYS);
@@ -230,7 +227,7 @@ function drawCardData() {
   const { cardsData: { selectedCardIndex, hoverCardIndex, plotConfig } } = global;
   const index = selectedCardIndex || hoverCardIndex;
 
-  if(!index) {
+  if (!index) {
     return;
   }
 

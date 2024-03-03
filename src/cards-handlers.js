@@ -3,6 +3,10 @@ import { mat4, vec4 } from 'gl-matrix';
 
 const EVENTS_SETTINGS = [
   {
+    name: 'card-new',
+    handler: newCardHandler
+  },
+  {
     name: 'mousedown',
     handler: mouseDownHandler
   }, {
@@ -32,15 +36,40 @@ const state = {
   dragAndDropLastPosition: null,
   dragAndDropDeltaOffset: null,
   CARDS_mboModels: null,
-  CARDS_squares: null,
+  CARDS_squares: [],
 };
 
-export function cardsHandlerInit(CARDS_mboModels, CARDS_squares) {
-  const { canvas } = global;
+function newCardHandler() {
+  const { gl, cardsData } = global;
 
-  state.CARDS_mboModels = CARDS_mboModels;
-  state.CARDS_squares = CARDS_squares;
+  cardsData.plotConfig.push({
+    scale: {
+      x: 1,
+      y: 1
+    },
+    offset: {
+      x: -1.0,
+      y: 0.0
+    }
+  });
+
+  let modelMatrix = mat4.fromYRotation(mat4.create(), 0.0);
+  modelMatrix = mat4.translate(modelMatrix, modelMatrix, [Math.random() * 4 - 2, Math.random() * 4 - 2, -1.5]);
+
+  state.CARDS_squares.push({
+    modelMatrix
+  });
+
   cardsUpdateModels();
+}
+
+export function cardsHandlerInit(modelsBuffer) {
+  const { gl, canvas, CARDS_MAX } = global;
+
+  state.CARDS_mboModels = modelsBuffer;
+  
+  gl.bindBuffer(gl.ARRAY_BUFFER, modelsBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, 4 * 16 * CARDS_MAX, gl.DYNAMIC_DRAW);
 
   EVENTS_SETTINGS.forEach(({ name, handler }) => {
     canvas.addEventListener(name, handler.bind(null));
@@ -51,8 +80,6 @@ export function cardsUpdateModels() {
   const { gl, CARDS_MAX } = global;
   const { CARDS_mboModels, CARDS_squares } = state;
 
-  gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
-  gl.bufferData(gl.ARRAY_BUFFER, 4 * 16 * CARDS_MAX, gl.DYNAMIC_DRAW);
 
   const data = new Float32Array(CARDS_squares.flatMap((square) => [...square.modelMatrix]));
   gl.bindBuffer(gl.ARRAY_BUFFER, CARDS_mboModels);
@@ -100,7 +127,7 @@ function horizontalHandler(delta = 0.1, { detail: { shiftKey } }) {
     ? adjustOffsetHorizontal
     : adjustScaleHorizontal
 
-    adjustFunction(index, plotConfig[index], delta)
+  adjustFunction(index, plotConfig[index], delta)
 }
 
 function adjustScaleHorizontal(index, plotConfig, delta) {
@@ -122,7 +149,7 @@ function verticalHandler(delta = 0.1, { detail: { shiftKey } }) {
     ? adjustOffsetVertical
     : adjustScaleVertical
 
-    adjustFunction(index, plotConfig[index], delta)
+  adjustFunction(index, plotConfig[index], delta)
 }
 
 function adjustScaleVertical(index, plotConfig, delta) {

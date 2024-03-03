@@ -21,7 +21,7 @@ export default {
     y: 0,
   },
   cardsData: {
-    selectedCardIndex: 1,
+    selectedCardIndex: 0,
     hoverCardIndex: null,
     plotConfig: []
   }
