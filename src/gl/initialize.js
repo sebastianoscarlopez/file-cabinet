@@ -2,7 +2,7 @@ import { global } from '@/helpers/index';
 import { glMatrix, mat4 } from 'gl-matrix';
 
 export function setupCanvas(canvas) {
-  const gl = canvas.getContext('webgl2', { antialias: false, stencil: true, alpha: false, premultipliedAlpha: false });
+  const gl = canvas.getContext('webgl2', { antialias: false, stencil: true, alpha: false, premultipliedAlpha: false, xrCompatible: true });
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
   // gl.disable(gl.DEPTH_TEST);
@@ -37,5 +37,6 @@ export function setupCanvas(canvas) {
   global.aspect = aspect;
   global.clientWidth = canvas.clientWidth;
   global.clientHeight = canvas.clientHeight;
-
+  global.isWebXR = false;
+  global.requestAnimationFrame = window.requestAnimationFrame.bind(window);
 }

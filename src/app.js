@@ -1,6 +1,7 @@
-import { mat4 } from 'gl-matrix';
+import { glMatrix, mat4 } from 'gl-matrix';
 
 import { global } from '@/helpers/index';
+import { webXRInitialize } from './web-xr/initialize';
 
 import {
   quad, points, cards, cardHover, cardsSelection, basic, cursor, text,
@@ -12,29 +13,18 @@ import { cardsHandlerInit, cardsDragAndDropHandler } from './cards-handlers';
 import { mouseMoveHandler } from './mouse-handlers';
 import { keydownHandler } from './keyboard-handlers';
 import { createSelectionFrameBuffer } from './selection-framebuffer';
-
-
-// const CARDS_squares = [
-//   {
-//     modelMatrix: mat4.translate(mat4.create(), mat4.create(), [0.0, 0.0, -0.5])
-//   },
-// ];
-
-// for (let i = 0; i < CARDS_squares.length; i++) {
-//   global.cardsData.plotConfig.push({
-//     scale: {
-//       x: 1,
-//       y: 1
-//     },
-//     offset: {
-//       x: -1.0,
-//       y: 0.0
-//     }
-//   });
-// }
+import { setupUniformSettings } from '@/programs/shared-settings';
 
 const startApp = async () => {
   const { gl, canvas, programs, clientWidth, clientHeight } = global;
+
+  setTimeout(async () => {
+    const isWebXR = await webXRInitialize()
+
+    global.requestAnimationFrame = isWebXR
+      ? global.webXR.session.requestAnimationFrame.bind(global.webXR.session)
+      : window.requestAnimationFrame.bind(window);
+  }, 3000);
 
   await setupPrograms(programs);
   basic.init();
@@ -77,28 +67,12 @@ const startApp = async () => {
   setTimeout(() => {
     canvas.dispatchEvent(new CustomEvent('card-new'));
   }, 1500);
-  // RAY_boCoords = gl.createBuffer();
-  // gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
-  // gl.bufferData(gl.ARRAY_BUFFER, 4 * 3 * 2, gl.DYNAMIC_DRAW);
-  // ray.init({
-  //   rayBuffer: RAY_boCoords,
-  //   modelsBuffer: CARDS_mboModels
-  // });
-  // gl.bindBuffer(gl.ARRAY_BUFFER, RAY_boCoords);
-  // gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([
-  //   0.0, 0.0, 0.998, 
-  //   0.0, 0.0002, 0.998999
-  // ]));
 
   text.init();
 
   POINTS_CAPTURE();
 
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  // gl.viewport(0, 0, clientWidth, clientHeight );
-
-
-  renderLoop();
+  global.requestAnimationFrame(renderLoop);
 }
 
 function POINTS_SETUP() {
@@ -122,37 +96,14 @@ function CARDS_SETUP({
   });
 }
 
-function renderLoop() {
+function renderLoop(time, frame) {
+  const { gl, programs, clientWidth, clientHeight, cursorData, selectionFrameBuffer, cardsData, requestAnimationFrame, webXR } = global;
+
   if (!global.initiated) {
+    console.log('not initiated', time, frame);
     requestAnimationFrame(renderLoop);
     return;
   }
-  const { gl, clientWidth, clientHeight, cursorData, selectionFrameBuffer, cardsData } = global;
-
-
-  // gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  // gl.enable(gl.BLEND);
-  // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-  // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-
-  // gl.lineWidth(50.0);
-  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-  // gl.depthFunc(gl.LESS);
-  // gl.disable(gl.STENCIL_TEST);
-
-  // ray.draw();
-  // const totalPoints = dataStorage.memoryBufferOffset / 4 / 2;
-  // console.log(totalPoints)
-  // lines.draw(totalPoints);
-
-  // gl.enable(gl.STENCIL_TEST);
-  // gl.stencilMask(0xFF);
-
-  // gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-  // gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
-
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, cardsFrameBuffers);
-  // gl.viewport(0, 0, cardsTextureSize, cardsTextureSize);
 
   for (let i = 0; i < cardsData.plotConfig.length; i++) {
     points.draw(i);
@@ -173,58 +124,85 @@ function renderLoop() {
   global.cursorData.pixels = pixels;
   cardsDragAndDropHandler();
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, clientWidth, clientHeight);
-  gl.clearColor(0.0, 0.0, 0.0, 0.0);
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-  gl.depthFunc(gl.LESS);
-  gl.enable(gl.BLEND);
-  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-  gl.enable(gl.STENCIL_TEST);
-  gl.stencilMask(0xFF);
-  gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
-  gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
-  cards.draw();
+  if (webXR && frame) {
+    const adjustedRefSpace = webXR.referenceSpace;//applyPositionOffsets(webXR.referenceSpace);
+    const pose = frame.getViewerPose(adjustedRefSpace);
 
-  gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
-  cardHover.draw();
+    if (pose) {
+      const glLayer = frame.session.renderState.baseLayer;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, glLayer.framebuffer);
 
-  gl.disable(gl.STENCIL_TEST);
-  gl.depthFunc(gl.ALWAYS);
-  cursor.draw();
+      gl.clearColor(0.0, 0.0, 0, 0.0);
+      gl.clearDepth(1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  drawCardData();
-  // gl.depthFunc(gl.ALWAYS)
+      // const deltaTime = (time - lastFrameTime) * 0.001;
+      // lastFrameTime = time;
 
-  // gl.stencilFunc(gl.EQUAL, 1, 0xFF);
+      for (const view of pose.views) {
+        const viewport = glLayer.getViewport(view);
+        gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
 
+        const aspect = viewport.width / viewport.height;
+        const viewMatrix = mat4.create();
+        mat4.lookAt(viewMatrix, [0, 0, 1], [0, 0, 0], [0, 1, 0]);
+        // const projectionMatrix = mat4.perspective(mat4.create(), glMatrix.toRadian(90), aspect, 0.001, 100);
+    
+        global.viewMatrix = view.transform.inverse.matrix;
+        global.projectionMatrix = view.projectionMatrix
+        global.aspect = aspect;
+        global.clientWidth = viewport.width;
+        global.clientHeight = viewport.height;
+    
+        requestAnimationFrame(() => {
+          setupUniformSettings(programs.find((program) => program.name === 'basic').glProgram, global.uboBuffer);
+        });
 
-  // gl.disable(gl.STENCIL_TEST);
-  // gl.depthFunc(gl.LESS)
+        // myRenderScene(gl, view, sceneData, deltaTime);
+        renderScene();
+      }
+    }
+  } else {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, global.clientWidth, global.clientHeight);
 
-
-
-  // const { programs } = global;
-  // const programConfig = programs.find((program) => program.name === 'quad');
-
-  // const u_texture0Location = gl.getUniformLocation(programConfig.glProgram, "u_texture0");
-  // gl.uniform1i(u_texture0Location, 0);
-  // // const u_texture1Location = gl.getUniformLocation(glProgramCards, "u_texture1");
-  // // gl.uniform1i(u_texture1Location, 1);
-
-  // gl.activeTexture(gl.TEXTURE0);
-  // gl.bindTexture(gl.TEXTURE_2D, cardsTexture);
-  // // gl.activeTexture(gl.TEXTURE1);
-  // // gl.bindTexture(gl.TEXTURE_2D, QUAD_texture);
-
-  // quad.draw();
+    gl.clearColor(0.0, 0.0, 0, 0.0);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    renderScene();
+  }
 
   requestAnimationFrame(renderLoop);
 }
 
+function renderScene() {
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  // gl.viewport(0, 0, clientWidth, clientHeight);
+  // gl.clearColor(0.0, 0.0, 0.0, 0.0);
+  // gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  // gl.depthFunc(gl.LESS);
+  // gl.enable(gl.BLEND);
+  // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+  // gl.enable(gl.STENCIL_TEST);
+  // gl.stencilMask(0xFF);
+  // gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
+  // gl.stencilFunc(gl.ALWAYS, 1, 0xFF);
+  cards.draw();
+
+  // gl.stencilFunc(gl.NOTEQUAL, 1, 0xFF);
+  cardHover.draw();
+
+  // gl.disable(gl.STENCIL_TEST);
+  // gl.depthFunc(gl.ALWAYS);
+  cursor.draw();
+
+  drawCardData();
+}
+
 function drawCardData() {
-  const { cardsData: { selectedCardIndex, hoverCardIndex, plotConfig } } = global;
+  const { cardsData: { selectedCardIndex, hoverCardIndex, plotConfig, gl } } = global;
   const index = selectedCardIndex || hoverCardIndex;
 
   if (!index) {
@@ -232,10 +210,9 @@ function drawCardData() {
   }
 
   const { offset, scale } = plotConfig[index - 1];
-
   text.draw({
     characters: `Card Index: ${index} | Offset: ${offset.x.toFixed(2)}, ${offset.y.toFixed(2)} | Scale: ${scale.x.toFixed(2)}, ${scale.y.toFixed(2)}`,
-    // characters: 'lol',
+    // characters: 'AaEeIiOoUu',
     x: -0.95,
     y: -0.95
   });

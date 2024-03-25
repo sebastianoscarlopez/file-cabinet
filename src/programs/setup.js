@@ -61,7 +61,7 @@ export async function setupPrograms(programs) {
   });
 
 
-  const { gl, canvas } = global;
+  const { gl, canvas, requestAnimationFrame } = global;
   const configQuad = {
     name: 'quad',
     glProgram: glQuad,
@@ -71,7 +71,7 @@ export async function setupPrograms(programs) {
   }
   programs.push(configQuad);
 
-  const uboBuffer = gl.createBuffer();
+  global.uboBuffer = gl.createBuffer();
 
   const resizeObserver = new ResizeObserver((entries) => {
     global.initiated = false;
@@ -91,7 +91,7 @@ export async function setupPrograms(programs) {
     global.clientHeight = clientHeight;
 
     requestAnimationFrame(() => {
-      setupUniformSettings(glProgramBasic, uboBuffer);
+      setupUniformSettings(glProgramBasic, global.uboBuffer);
     });
   });
 

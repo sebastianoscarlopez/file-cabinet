@@ -7,9 +7,9 @@ const tinySdf = new TinySDF({
   fontFamily: 'sans-serif', // CSS font-family
   fontWeight: 'normal',     // CSS font-weight
   fontStyle: 'normal',      // CSS font-style
-  buffer: 2,                // Whitespace buffer around a glyph in pixels
-  radius: 3,                // How many pixels around the glyph shape to use for encoding distance
-  cutoff: 0.1              // How much of the radius (relative) is used for the inside part of the glyph
+  buffer: 3,                // Whitespace buffer around a glyph in pixels
+  radius: 8,                // How many pixels around the glyph shape to use for encoding distance
+  cutoff: 0.25              // How much of the radius (relative) is used for the inside part of the glyph
 });
 
 const canvas = document.getElementById('canvas');
@@ -17,14 +17,14 @@ const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
 // Convert alpha-only to RGBA so we can use `putImageData` for building the composite bitmap
 function makeRGBAImageData(alphaChannel, width, height) {
-    const imageData = ctx.createImageData(width, height);
-    for (let i = 0; i < alphaChannel.length; i++) {
-        imageData.data[4 * i + 0] = alphaChannel[i];
-        imageData.data[4 * i + 1] = alphaChannel[i];
-        imageData.data[4 * i + 2] = alphaChannel[i];
-        imageData.data[4 * i + 3] = 255;
-    }
-    return imageData;
+  const imageData = ctx.createImageData(width, height);
+  for (let i = 0; i < alphaChannel.length; i++) {
+    imageData.data[4 * i + 0] = alphaChannel[i];
+    imageData.data[4 * i + 1] = alphaChannel[i];
+    imageData.data[4 * i + 2] = alphaChannel[i];
+    imageData.data[4 * i + 3] = 255;
+  }
+  return imageData;
 }
 let texture;
 
@@ -80,7 +80,7 @@ export function draw({
   x,
   y
 }) {
-  const { gl, programs, clientWidth, clientHeight} = global;
+  const { gl, programs, clientWidth, clientHeight } = global;
   const program = programs.find((program) => program.name === 'text');
 
   gl.useProgram(program.glProgram);
@@ -89,9 +89,9 @@ export function draw({
 
 
   const glyphs = characters.split('').map((char) => tinySdf.draw(char));
-// console.log(glyphs)
+  // console.log(glyphs)
   // const sdfData = new Uint8Array(width * height * 4);
-  
+
   // let offsetX = 0;
   // for (let i = 0; i < glyphs.length; i++) {
   //   const glyph = glyphs[i];
@@ -105,12 +105,12 @@ export function draw({
   //   // console.log(glyph)
   // }
 
-    // console.log(glyphs[0], width, height);
+  // console.log(glyphs[0], width, height);
   // console.log(width, height, sdfData);
 
   // const maxGlyphdata = Math.max(...glyphs[0].data);
   let glyphAdvanceTotal = 0.0;
-  for(let i = 0; i < glyphs.length; i++) {
+  for (let i = 0; i < glyphs.length; i++) {
     const glyph = glyphs[i];
     const width = glyph.width;
     const height = glyph.height;
